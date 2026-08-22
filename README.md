@@ -1,5 +1,38 @@
 # Refrendo
 
+**A coding agent that doesn't take its own word for it.**
+
+Most AI coding tools finish when the model stops writing. Refrendo finishes when
+*your* project's `typecheck`, `test` and `lint` pass. If it can't get there, it
+reverts every file it touched and tells you why. You never inherit a half-broken
+tree.
+
+```bash
+npm install -g refrendo
+refrendo serve --demo          # see what it does, no API key needed
+```
+
+```yaml
+- uses: refrendo/refrendo@v0.0.1
+  with:
+    goal: ${{ github.event.issue.title }}
+    anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+```
+
+Opens a pull request **only if your own quality gates pass**. Otherwise it
+reverts, comments why, and fails the job.
+
+**Proof it works:** [PR #1](https://github.com/refrendo/refrendo/pull/1) of this
+repository was opened by the agent itself, running in GitHub Actions. It planned,
+wrote the code, ran the gates, and only then committed. It also found a real
+`EPIPE` bug in this codebase, **refused to fix it because it was outside the
+approved plan**, and documented it with file and line.
+
+The rest of this README, the CLI and the code comments are in Spanish.
+Apache-2.0.
+
+---
+
 **Agente de trabajo verificado.** No conversa sobre tu código: lo cambia, y después demuestra que sigue funcionando.
 
 La diferencia con un asistente de código es una sola: un chatbot termina cuando deja de escribir. Refrendo termina cuando `typecheck`, `test`, `lint` y `build` de **tu** proyecto pasan. Si no lo consigue, revierte todo y te lo dice. Nunca te deja un árbol a medias que alguien tenga que limpiar a mano.

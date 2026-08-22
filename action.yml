@@ -1,8 +1,8 @@
-name: "Refrendo — agente de trabajo verificado"
+name: "Refrendo"
 description: >-
-  Ejecuta un agente sobre el repositorio y abre un pull request SOLO si los
-  cambios pasan las puertas de calidad del propio proyecto. Si no lo consigue,
-  revierte y falla el job sin dejar nada detrás.
+  Runs a coding agent on your repository and opens a pull request ONLY if the
+  changes pass your own quality gates. If it cannot, it reverts everything and
+  fails the job, leaving nothing behind.
 author: "Refrendo"
 
 branding:
@@ -11,25 +11,25 @@ branding:
 
 inputs:
   goal:
-    description: "Qué tiene que conseguir el agente."
+    description: "What the agent has to achieve."
     required: true
   acceptance:
-    description: "Criterios de aceptación, uno por línea."
+    description: "Acceptance criteria, one per line."
     required: false
     default: ""
   constraints:
-    description: "Restricciones duras, una por línea."
+    description: "Hard constraints, one per line."
     required: false
     default: ""
   anthropic-api-key:
-    description: "Clave de la API de Anthropic."
+    description: "Anthropic API key."
     required: true
   github-token:
-    description: "Token para publicar la rama y abrir el PR."
+    description: "Token used to push the branch and open the pull request."
     required: false
     default: ${{ github.token }}
   model:
-    description: "Modelo a usar."
+    description: "Model to use."
     required: false
     default: "claude-opus-5"
   effort:
@@ -37,36 +37,36 @@ inputs:
     required: false
     default: "high"
   max-cost:
-    description: "Tope de gasto del run, en dólares. El run para al alcanzarlo."
+    description: "Spend cap for the run, in USD. The run stops when reached."
     required: false
     default: "2.00"
   working-directory:
-    description: "Directorio del repositorio."
+    description: "Repository directory."
     required: false
     default: "."
   branch-prefix:
-    description: "Prefijo de la rama que se crea."
+    description: "Prefix for the branch that gets created."
     required: false
     default: "refrendo"
   base:
-    description: "Rama base del pull request."
+    description: "Base branch for the pull request."
     required: false
     default: ${{ github.event.repository.default_branch }}
   create-pr:
-    description: "Publicar la rama y abrir el pull request cuando el run queda verificado."
+    description: "Push the branch and open the pull request when the run is verified."
     required: false
     default: "true"
   version:
     description: >-
-      Versión de Refrendo a usar. Fijada por defecto para que el resultado sea
-      reproducible; pon "latest" si prefieres seguir siempre la última.
+      Refrendo version to use. Pinned by default so runs are reproducible; set
+      "latest" to always follow the newest release.
     required: false
     default: "0.0.1"
   auto-approve:
     description: >-
-      Preaprueba los comandos que no están en la allowlist. Déjalo en false salvo
-      que sepas exactamente qué necesita ejecutar el agente: los comandos
-      destructivos siguen bloqueados, pero esto abre el resto.
+      Pre-approve commands outside the allowlist. Leave it false unless you know
+      exactly what the agent needs to run: destructive commands stay blocked,
+      but this opens up everything else.
     required: false
     default: "false"
 
@@ -75,30 +75,30 @@ outputs:
     description: "verified | unverified | reverted | exhausted | failed"
     value: ${{ steps.refrendo.outputs.status }}
   verified:
-    description: "true solo si las puertas del proyecto pasaron."
+    description: "true only if your project gates passed."
     value: ${{ steps.refrendo.outputs.verified }}
   cost-usd:
-    description: "Coste real del run."
+    description: "Actual cost of the run."
     value: ${{ steps.refrendo.outputs['cost-usd'] }}
   files-changed:
-    description: "Número de ficheros modificados."
+    description: "Number of files changed."
     value: ${{ steps.refrendo.outputs['files-changed'] }}
   branch:
-    description: "Rama creada, vacía si no se comiteó nada."
+    description: "Branch created, empty if nothing was committed."
     value: ${{ steps.refrendo.outputs.branch }}
   pr-url:
-    description: "URL del pull request, vacía si no se abrió."
+    description: "Pull request URL, empty if none was opened."
     value: ${{ steps.pr.outputs.url }}
 
 runs:
   using: composite
   steps:
-    - name: Preparar Node
+    - name: Set up Node
       uses: actions/setup-node@v4
       with:
         node-version: "24"
 
-    - name: Ejecutar el agente
+    - name: Run the agent
       id: refrendo
       shell: bash
       working-directory: ${{ inputs.working-directory }}
@@ -144,7 +144,7 @@ runs:
     # Aquí, y solo aquí, sale el código de la máquina. El agente nunca publica:
     # `git push` está en su denylist dura. La publicación es un paso visible del
     # workflow, con las credenciales del pipeline.
-    - name: Publicar la rama y abrir el pull request
+    - name: Push the branch and open the pull request
       id: pr
       if: ${{ steps.refrendo.outputs.verified == 'true' && steps.refrendo.outputs.branch != '' && inputs.create-pr == 'true' }}
       shell: bash
