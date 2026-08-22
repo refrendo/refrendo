@@ -1,14 +1,14 @@
 {
   "name": "refrendo",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": false,
   "type": "module",
   "bin": {
     "refrendo": "./dist/index.js"
   },
   "dependencies": {
-    "@refrendo/core": "*",
-    "@refrendo/server": "*"
+    "@refrendo/core": "^0.0.1",
+    "@refrendo/server": "^0.0.1"
   },
   "license": "Apache-2.0",
   "repository": {

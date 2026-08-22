@@ -56,6 +56,12 @@ inputs:
     description: "Publicar la rama y abrir el pull request cuando el run queda verificado."
     required: false
     default: "true"
+  version:
+    description: >-
+      Versión de Refrendo a usar. Fijada por defecto para que el resultado sea
+      reproducible; pon "latest" si prefieres seguir siempre la última.
+    required: false
+    default: "0.0.1"
   auto-approve:
     description: >-
       Preaprueba los comandos que no están en la allowlist. Déjalo en false salvo
@@ -92,10 +98,6 @@ runs:
       with:
         node-version: "24"
 
-    - name: Instalar Refrendo
-      shell: bash
-      run: npm ci --prefix "$GITHUB_ACTION_PATH"
-
     - name: Ejecutar el agente
       id: refrendo
       shell: bash
@@ -121,7 +123,10 @@ runs:
 
         # `ci` sale con 0 únicamente si el run queda verificado. No se usa
         # `continue-on-error`: si no está verificado, el job debe fallar.
-        node --import tsx "$GITHUB_ACTION_PATH/packages/cli/src/index.ts" ci "$REFRENDO_GOAL" \
+        # Se ejecuta el paquete publicado, no el codigo del repositorio: es el
+        # mismo artefacto que instala cualquier usuario, arranca sin compilar
+        # nada y queda fijado a una version concreta.
+        npx --yes "refrendo@${{ inputs.version }}" ci "$REFRENDO_GOAL" \
           --model "${{ inputs.model }}" \
           --effort "${{ inputs.effort }}" \
           --max-cost "${{ inputs.max-cost }}" \
