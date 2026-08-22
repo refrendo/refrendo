@@ -74,6 +74,7 @@ CREATE INDEX IF NOT EXISTS idx_runs_repo    ON runs (repo, created_at DESC);
  */
 export class RunStore {
   private readonly db: DatabaseSync;
+  private cerrado = false;
 
   private constructor(db: DatabaseSync) {
     this.db = db;
@@ -88,6 +89,56 @@ export class RunStore {
       await fs.mkdir(path.dirname(path.resolve(file)), { recursive: true });
     }
     return new RunStore(new DatabaseSync(file));
+  }
+
+  /**
+   * Cierra los runs que quedaron marcados como en curso por un proceso que ya
+   * no existe.
+   *
+   * Un `Ctrl+C` se puede capturar; un `kill -9`, un corte de luz o un runner de
+   * CI que se apaga, no. Sin esto, cada interrupcion deja un run eterno en
+   * curso que cuenta en el total del plano de equipo pero nunca entre los
+   * verificados: falsea a la baja justo la cifra sobre la que se factura.
+   *
+   * Se toma como huerfano lo que lleva mas de `horas` sin terminar. El valor
+   * por defecto es holgado a proposito: un run largo de verdad no llega a una
+   * hora, pero equivocarse cerrando uno vivo seria peor que tardar en limpiar.
+   */
+  reconcileStaleRuns(horas = 6): number {
+    const limite = new Date(Date.now() - horas * 3600_000).toISOString();
+    const resultado = this.db
+      .prepare(
+        `UPDATE runs
+            SET status = 'failed',
+                finished_at = ?,
+                result = ?
+          WHERE status = 'running' AND created_at < ?`,
+      )
+      .run(
+        new Date().toISOString(),
+        JSON.stringify({
+          error: {
+            code: "interrupted",
+            message: "El proceso que ejecutaba este run desaparecio sin dejar veredicto.",
+          },
+        }),
+        limite,
+      );
+    return Number(resultado.changes ?? 0);
+  }
+
+  /** Marca un run concreto como interrumpido, con su motivo. */
+  markInterrupted(runId: string, motivo: string): void {
+    this.db
+      .prepare(
+        `UPDATE runs SET status = 'failed', finished_at = ?, result = ?
+          WHERE id = ? AND finished_at IS NULL`,
+      )
+      .run(
+        new Date().toISOString(),
+        JSON.stringify({ error: { code: "interrupted", message: motivo } }),
+        runId,
+      );
   }
 
   createRun(input: CreateRunInput): RunRow {
@@ -262,8 +313,22 @@ export class RunStore {
     }));
   }
 
+  /**
+   * Cierra el almacen. Es idempotente a proposito.
+   *
+   * El cierre llega por varias rutas —fin normal del run, manejador de Ctrl+C,
+   * apagado del servidor— y es facil que dos coincidan. Un segundo cierre
+   * lanzaba "database is not open" y tumbaba el proceso justo al salir, que es
+   * el peor momento para un error: el trabajo ya estaba hecho.
+   */
   close(): void {
-    this.db.close();
+    if (this.cerrado) return;
+    this.cerrado = true;
+    try {
+      this.db.close();
+    } catch {
+      // Ya estaba cerrada por debajo; nada que hacer.
+    }
   }
 }
 

@@ -6,6 +6,8 @@ export interface Recording {
   /** Se engancha al bus del agente con `bus.on(recording.listener)`. */
   listener: (event: RefrendoEvent) => void;
   finish(result: RunResult): void;
+  /** Cierra el run sin veredicto: lo mataron antes de terminar. */
+  interrupt(motivo: string): void;
 }
 
 /**
@@ -33,6 +35,13 @@ export function recordRun(store: RunStore, input: CreateRunInput): Recording {
     finish: (result) => {
       try {
         store.finishRun(row.id, result);
+      } catch {
+        // Idem.
+      }
+    },
+    interrupt: (motivo) => {
+      try {
+        store.markInterrupted(row.id, motivo);
       } catch {
         // Idem.
       }

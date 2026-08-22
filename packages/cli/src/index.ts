@@ -235,8 +235,22 @@ async function main(argv: string[]): Promise<number> {
           });
           bus.on(recording.listener);
           receiptUrl = `/r/${recording.id}`;
+
+          // Un Ctrl+C a mitad de run dejaba la fila marcada como en curso para
+          // siempre, contando en el total del plano de equipo pero nunca entre
+          // los verificados. Se cierra con su motivo antes de salir.
+          const alInterrumpir = (senal: string) => () => {
+            recording.interrupt(`Run interrumpido (${senal}) antes de emitir veredicto.`);
+            store.close();
+            process.exit(130);
+          };
+          process.once("SIGINT", alInterrumpir("SIGINT"));
+          process.once("SIGTERM", alInterrumpir("SIGTERM"));
+
           closeStore = () => {
-            recording.finish(lastResult!);
+            // Sin resultado no hay veredicto que registrar: el run murio.
+            if (lastResult) recording.finish(lastResult);
+            else recording.interrupt("El run termino sin producir resultado.");
             store.close();
           };
         } catch (error) {

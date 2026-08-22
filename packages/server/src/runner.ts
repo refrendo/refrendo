@@ -158,6 +158,22 @@ export class RunManager {
     return true;
   }
 
+  /**
+   * Cancela todos los runs vivos y los cierra con su motivo.
+   *
+   * Abortar la senal no basta: el agente tarda en reaccionar y el almacen se
+   * cierra antes, asi que la fila se marca aqui mismo.
+   */
+  cancelAll(motivo: string): number {
+    const vivos = [...this.active.keys()];
+    for (const runId of vivos) {
+      this.active.get(runId)?.abort();
+      this.store.markInterrupted(runId, motivo);
+    }
+    this.active.clear();
+    return vivos.length;
+  }
+
   isActive(runId: string): boolean {
     return this.active.has(runId);
   }

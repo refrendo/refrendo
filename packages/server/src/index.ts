@@ -45,6 +45,15 @@ export async function startServer(config: ServerConfig): Promise<RunningServer> 
   // seria una invitacion a que alguien descubra el puerto y no pueda usarlo.
   const host = config.host ?? (config.token ? "0.0.0.0" : "127.0.0.1");
   const store = await RunStore.open(config.dbFile ?? ".refrendo/runs.db");
+
+  // Si el servidor anterior murio sin cerrar sus runs, quedaron eternamente
+  // en curso. Arrancar es el momento natural de limpiarlos: nada de lo que
+  // hubiera vivo entonces sigue vivo ahora.
+  const huerfanos = store.reconcileStaleRuns();
+  if (huerfanos > 0) {
+    process.stderr.write(`aviso: ${huerfanos} run(s) huerfano(s) cerrados al arrancar.
+`);
+  }
   const runs = new RunManager({
     store,
     allowedRoots: config.allowedRoots,
@@ -70,6 +79,9 @@ export async function startServer(config: ServerConfig): Promise<RunningServer> 
     store,
     runs,
     async close() {
+      // Primero se cancelan los runs vivos: si se cerrara el almacen con
+      // alguno escribiendo, sus eventos petarian contra una base cerrada.
+      runs.cancelAll("El servidor se detuvo antes de que el run terminara.");
       await new Promise<void>((resolve) => server.close(() => resolve()));
       store.close();
     },
