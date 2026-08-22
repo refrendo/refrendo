@@ -12,7 +12,7 @@
   },
   "scripts": {
     "refrendo": "tsx packages/cli/src/index.ts",
-    "build": "npm run build -w @refrendo/core && npm run build -w @refrendo/server && npm run build -w @refrendo/cli",
+    "build": "npm run build -w @refrendo/core && npm run build -w @refrendo/server && npm run build -w refrendo",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"

@@ -5,7 +5,7 @@
 La diferencia con un asistente de código es una sola: un chatbot termina cuando deja de escribir. Refrendo termina cuando `typecheck`, `test`, `lint` y `build` de **tu** proyecto pasan. Si no lo consigue, revierte todo y te lo dice. Nunca te deja un árbol a medias que alguien tenga que limpiar a mano.
 
 ```bash
-npx tsx packages/cli/src/index.ts run "añade paginación al endpoint de usuarios" \
+refrendo run "añade paginación al endpoint de usuarios" \
   --accept "el endpoint acepta ?page y ?limit" \
   --accept "hay test para el caso de página fuera de rango"
 ```
@@ -97,7 +97,19 @@ El renderizador solo consume `RefrendoEvent` y nunca llama al motor. Esa fronter
 ## Uso
 
 ```bash
-npm install
+npm install -g refrendo
+```
+
+O sin instalar nada:
+
+```bash
+npx refrendo run "añade paginación al endpoint de usuarios"
+```
+
+Para trabajar sobre este repositorio:
+
+```bash
+npm install && npm run build
 ```
 
 Credenciales — cualquiera de las dos:
@@ -120,7 +132,7 @@ o `ant auth login`, que deja un perfil que el SDK lee solo.
 ### Ver el producto sin clave de API
 
 ```bash
-npx tsx packages/cli/src/index.ts serve --demo
+refrendo serve --demo
 ```
 
 Siembra un run de ejemplo —el agente se equivoca, la puerta lo caza, lo arregla y entonces pasa— y te da el enlace. Es la demo, y no necesita credenciales ni repositorio conectado.
