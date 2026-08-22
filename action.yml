@@ -123,10 +123,17 @@ runs:
 
         # `ci` sale con 0 únicamente si el run queda verificado. No se usa
         # `continue-on-error`: si no está verificado, el job debe fallar.
-        # Se ejecuta el paquete publicado, no el codigo del repositorio: es el
-        # mismo artefacto que instala cualquier usuario, arranca sin compilar
-        # nada y queda fijado a una version concreta.
-        npx --yes "refrendo@${{ inputs.version }}" ci "$REFRENDO_GOAL" \
+        # Se instala el paquete publicado —el mismo artefacto que recibe
+        # cualquier usuario— en vez de compilar el codigo del repositorio.
+        #
+        # Instalacion global y no `npx <paquete>@<version>`: npx tiene que
+        # deducir que binario ejecutar a partir del nombre del paquete, y esa
+        # deduccion fallo en Linux con "refrendo: not found" pese a que el
+        # tarball trae el bin correcto. Instalar deja el ejecutable en el PATH
+        # sin que nadie tenga que adivinar nada.
+        npm install -g "refrendo@${{ inputs.version }}"
+
+        refrendo ci "$REFRENDO_GOAL" \
           --model "${{ inputs.model }}" \
           --effort "${{ inputs.effort }}" \
           --max-cost "${{ inputs.max-cost }}" \
