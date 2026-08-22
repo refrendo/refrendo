@@ -1,8 +1,9 @@
 name: "Refrendo"
-description: >-
-  Runs a coding agent on your repository and opens a pull request ONLY if the
-  changes pass your own quality gates. If it cannot, it reverts everything and
-  fails the job, leaving nothing behind.
+# El Marketplace corta la descripcion en 125 caracteres. Es la ficha del
+# catalogo, no documentacion: tiene que caber y tiene que decir las dos mitades
+# —abre el PR si pasan las puertas, revierte si no—, porque la segunda es la
+# que diferencia esto de cualquier otro agente.
+description: "Runs a coding agent that opens a pull request only if your own quality gates pass. Otherwise it reverts everything."
 author: "Refrendo"
 
 branding:
