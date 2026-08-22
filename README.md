@@ -1,8 +1,8 @@
-# Forge
+# Refrendo
 
 **Agente de trabajo verificado.** No conversa sobre tu código: lo cambia, y después demuestra que sigue funcionando.
 
-La diferencia con un asistente de código es una sola: un chatbot termina cuando deja de escribir. Forge termina cuando `typecheck`, `test`, `lint` y `build` de **tu** proyecto pasan. Si no lo consigue, revierte todo y te lo dice. Nunca te deja un árbol a medias que alguien tenga que limpiar a mano.
+La diferencia con un asistente de código es una sola: un chatbot termina cuando deja de escribir. Refrendo termina cuando `typecheck`, `test`, `lint` y `build` de **tu** proyecto pasan. Si no lo consigue, revierte todo y te lo dice. Nunca te deja un árbol a medias que alguien tenga que limpiar a mano.
 
 ```bash
 npx tsx packages/cli/src/index.ts run "añade paginación al endpoint de usuarios" \
@@ -42,7 +42,7 @@ Ese ciclo `reparar → volver a verificar` es el producto. Todo lo demás es inf
 
 **1. Contrato, no conversación.** La entrada es un objetivo con criterios de aceptación y restricciones ([`TaskContract`](packages/core/src/types.ts)). La salida es un [`RunResult`](packages/core/src/types.ts) tipado con estado, diff, informe de verificación y coste. Serializable de punta a punta: la CLI, un runner de CI y la futura UI web consumen exactamente lo mismo.
 
-**2. Las puertas las pone el proyecto, no el agente.** [`detectGates`](packages/core/src/verify.ts) lee los scripts de tu `package.json`. Si tu `npm test` pasa, para tu equipo está bien. Si no tienes puertas, Forge lo dice en vez de fingir que verificó algo — el resultado sale marcado `SIN VERIFICAR`.
+**2. Las puertas las pone el proyecto, no el agente.** [`detectGates`](packages/core/src/verify.ts) lee los scripts de tu `package.json`. Si tu `npm test` pasa, para tu equipo está bien. Si no tienes puertas, Refrendo lo dice en vez de fingir que verificó algo — el resultado sale marcado `SIN VERIFICAR`.
 
 **3. Transaccional por defecto.** Cada primera escritura sobre un fichero captura su estado previo en el [`ChangeJournal`](packages/core/src/journal.ts). Si el árbol no llega a verde tras agotar los intentos de reparación, se revierte entero. Un run fallido cuesta dinero, no tiempo de limpieza.
 
@@ -90,7 +90,7 @@ El proveedor pide dos funciones beta: **rescate por rechazo** (si el modelo decl
 
 Si la API devuelve un `400` porque la cuenta o el modelo no las tienen, se desactivan y se reintenta **una vez**, con un aviso en el stream. Un `401`, un `429` o un `5xx` no se degradan: no se arreglan quitando betas y reintentar sólo gastaría otra petición. El núcleo del agente no depende de ninguna de las dos, así que perderlas es una pérdida de calidad, no de funcionamiento.
 
-El renderizador solo consume `ForgeEvent` y nunca llama al motor. Esa frontera es lo que permite montar la UI web y las sesiones compartidas de equipo sobre el mismo stream sin tocar el núcleo.
+El renderizador solo consume `RefrendoEvent` y nunca llama al motor. Esa frontera es lo que permite montar la UI web y las sesiones compartidas de equipo sobre el mismo stream sin tocar el núcleo.
 
 ---
 
@@ -110,12 +110,12 @@ o `ant auth login`, que deja un perfil que el SDK lee solo.
 
 | Comando | Qué hace |
 |---|---|
-| `forge run <objetivo>` | Planifica, aplica y verifica |
-| `forge plan <objetivo>` | Solo planifica; no toca nada |
-| `forge verify` | Ejecuta las puertas del proyecto |
-| `forge init` | Crea `forge.config.json` con las puertas detectadas |
-| `forge ci <objetivo>` | Como `run`, pero comitea en una rama **solo si queda verificado** |
-| `forge serve` | Servidor: historial, trazas en directo y la página de cada run |
+| `refrendo run <objetivo>` | Planifica, aplica y verifica |
+| `refrendo plan <objetivo>` | Solo planifica; no toca nada |
+| `refrendo verify` | Ejecuta las puertas del proyecto |
+| `refrendo init` | Crea `refrendo.config.json` con las puertas detectadas |
+| `refrendo ci <objetivo>` | Como `run`, pero comitea en una rama **solo si queda verificado** |
+| `refrendo serve` | Servidor: historial, trazas en directo y la página de cada run |
 
 ### Ver el producto sin clave de API
 
@@ -129,7 +129,7 @@ Opciones útiles: `--accept` (criterio, repetible), `--max-cost`, `--effort`, `-
 
 El código de salida es la señal para CI: **`0` solo si el estado es `verified`.**
 
-### `forge.config.json`
+### `refrendo.config.json`
 
 Se versiona con el repositorio a propósito — las puertas y el tope de gasto son decisiones de equipo, no preferencias de cada máquina.
 
@@ -143,14 +143,14 @@ Se versiona con el repositorio a propósito — las puertas y el tope de gasto s
 }
 ```
 
-Precedencia: valores por defecto → fichero → variables de entorno (`FORGE_MODEL`, `FORGE_EFFORT`, `FORGE_MAX_COST_USD`).
+Precedencia: valores por defecto → fichero → variables de entorno (`REFRENDO_MODEL`, `REFRENDO_EFFORT`, `REFRENDO_MAX_COST_USD`).
 
 ---
 
 ## Integración con CI
 
 ```yaml
-- uses: tu-org/forge@v1
+- uses: tu-org/refrendo@v1
   with:
     goal: ${{ github.event.issue.title }}
     anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -161,11 +161,11 @@ Ejecuta el agente sobre el repositorio y **abre el pull request solo si las puer
 
 **El agente no publica.** Crea la rama y el commit; el `git push` y la apertura del PR son un paso explícito del workflow, con las credenciales del pipeline. `git push` sigue en la denylist dura del agente. Quien lea el fichero del workflow ve exactamente dónde sale el código de la máquina — no está escondido dentro de un binario.
 
-El mensaje de commit lleva la procedencia: objetivo, puertas que lo verificaron, ciclos de reparación y enlace a la traza. El autor es la persona que lo pidió, no "Forge": el responsable de un cambio es alguien, aunque lo haya tecleado un agente.
+El mensaje de commit lleva la procedencia: objetivo, puertas que lo verificaron, ciclos de reparación y enlace a la traza. El autor es la persona que lo pidió, no "Refrendo": el responsable de un cambio es alguien, aunque lo haya tecleado un agente.
 
 ## Gobernanza de equipo
 
-Tres cláusulas en `forge.config.json`, versionadas con el repositorio:
+Tres cláusulas en `refrendo.config.json`, versionadas con el repositorio:
 
 ```json
 {
@@ -176,14 +176,14 @@ Tres cláusulas en `forge.config.json`, versionadas con el repositorio:
 ```
 
 - **`requiredGates`** cierra el agujero más grande del diseño: las puertas se detectan del proyecto, y el agente puede editar el proyecto. Sin esto, borrar el script de tests deja un árbol que "pasa" porque ya no hay nada que ejecutar. Con esto, la ausencia de una puerta obligatoria **es** un fallo.
-- **`protectedPaths`** son rutas que el agente no puede escribir nunca. De serie ya incluye `.github/workflows/**`, `action.yml` y la propia configuración de Forge — todo lo que le permitiría falsear su veredicto. Pedirle en el prompt que no las toque es una petición; esto es un cerrojo.
+- **`protectedPaths`** son rutas que el agente no puede escribir nunca. De serie ya incluye `.github/workflows/**`, `action.yml` y la propia configuración de Refrendo — todo lo que le permitiría falsear su veredicto. Pedirle en el prompt que no las toque es una petición; esto es un cerrojo.
 - El **plano de equipo** (`/team`) muestra tasa de verificación y **coste por run verificado** por repositorio y por persona. No hay ranking de actividad individual: medir eso convierte la herramienta en vigilancia y cambia el comportamiento del equipo antes de aportar nada.
 
 **Enlaces compartibles**: `POST /api/runs/:id/share` emite un enlace firmado que abre **ese** run, en solo lectura y con caducidad. La firma cubre identificador y vencimiento juntos, así que no se puede reutilizar en otro run ni estirar la fecha.
 
 ## Estado
 
-**Servidor — límites conocidos.** Sin `FORGE_TOKEN` solo atiende peticiones locales; con token, exige `Authorization: Bearer` en todas las rutas y compara en tiempo constante. Los runs por API solo pueden tocar los repositorios declarados en `--root`. Lo que **no** hay todavía: enlaces de compartición firmados (hoy quien tiene el token ve todos los runs), SSO y aprobaciones por HTTP — un run lanzado por API deniega lo que requiera aprobación en vez de esperar a nadie.
+**Servidor — límites conocidos.** Sin `REFRENDO_TOKEN` solo atiende peticiones locales; con token, exige `Authorization: Bearer` en todas las rutas y compara en tiempo constante. Los runs por API solo pueden tocar los repositorios declarados en `--root`. Lo que **no** hay todavía: enlaces de compartición firmados (hoy quien tiene el token ve todos los runs), SSO y aprobaciones por HTTP — un run lanzado por API deniega lo que requiera aprobación en vez de esperar a nadie.
 
 **Probado:** 202 tests sobre las partes deterministas. Además de las unidades (confinamiento de rutas incluido el escape por enlaces, rollback, denylist, rutas protegidas, puertas obligatorias, aritmética de coste, firmas de compartición), el **orquestador completo** se ejercita contra un proveedor simulado y puertas reales que se ejecutan como subprocesos: verificado a la primera, reparación tras fallo, reversión al agotar intentos, `--keep`, proyectos sin puertas y modo plan. La capa de CI se prueba contra **repositorios Git reales** en temporal: nombres de rama, mensajes con comillas y acentos, autoría, y que un run no verificado no comitea nada.
 
@@ -208,7 +208,7 @@ El primer run real encontró **tres defectos que ningún test había detectado**
 
 **Fuera de alcance de esta iteración**, en orden de dependencia:
 
-1. **Servidor HTTP + SSE** reemitiendo `ForgeEvent`. El stream ya es serializable; falta el transporte.
+1. **Servidor HTTP + SSE** reemitiendo `RefrendoEvent`. El stream ya es serializable; falta el transporte.
 2. **Persistencia de runs.** `EventBus.transcript()` ya guarda la traza completa: darle almacenamiento la convierte en historial auditable y reproducible por equipo.
 3. **Colaboración.** Varios espectadores sobre un run, aprobaciones delegadas a quien tenga permiso, comentarios anclados a un paso del plan.
 4. **Precios por equipo.** El agregado de `usage` por run es la unidad de facturación; falta atribución por usuario y workspace, y cuotas por asiento.

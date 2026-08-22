@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Budget } from "../budget.js";
-import { EventBus, type ForgeEvent } from "../events.js";
+import { EventBus, type RefrendoEvent } from "../events.js";
 import { ChangeJournal } from "../journal.js";
 import { runLoop } from "../loop.js";
 import { Policy, defaultPolicyConfig } from "../policy.js";
@@ -16,10 +16,10 @@ import { Workspace } from "../workspace.js";
 let root: string;
 let ctx: ToolContext;
 let bus: EventBus;
-let events: ForgeEvent[];
+let events: RefrendoEvent[];
 
 beforeEach(async () => {
-  root = await fs.mkdtemp(path.join(os.tmpdir(), "forge-loop-"));
+  root = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-loop-"));
   const workspace = new Workspace(root);
   bus = new EventBus();
   events = [];

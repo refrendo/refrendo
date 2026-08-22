@@ -97,7 +97,7 @@ describe("comparticion sobre el servidor", () => {
   let runId: string;
 
   beforeEach(async () => {
-    repo = await fs.mkdtemp(path.join(os.tmpdir(), "forge-share-"));
+    repo = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-share-"));
     server = await startServer({
       allowedRoots: [repo],
       dbFile: ":memory:",

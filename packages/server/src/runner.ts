@@ -1,14 +1,14 @@
 import path from "node:path";
 import {
   EventBus,
-  ForgeAgent,
+  RefrendoAgent,
   Policy,
   Workspace,
   defaultPolicyConfig,
   type BudgetLimits,
   type Effort,
   type TaskContract,
-} from "@forge/core";
+} from "@refrendo/core";
 import type { RunRow, RunStore, StoredEvent } from "./store.js";
 
 export class WorkspaceNotAllowed extends Error {
@@ -104,7 +104,7 @@ export class RunManager {
     const controller = new AbortController();
     this.active.set(row.id, controller);
 
-    const agent = new ForgeAgent({
+    const agent = new RefrendoAgent({
       workspace: new Workspace(workspace),
       bus,
       signal: controller.signal,

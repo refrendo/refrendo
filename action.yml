@@ -1,9 +1,9 @@
-name: "Forge — agente de trabajo verificado"
+name: "Refrendo — agente de trabajo verificado"
 description: >-
   Ejecuta un agente sobre el repositorio y abre un pull request SOLO si los
   cambios pasan las puertas de calidad del propio proyecto. Si no lo consigue,
   revierte y falla el job sin dejar nada detrás.
-author: "Forge"
+author: "Refrendo"
 
 branding:
   icon: check-circle
@@ -47,7 +47,7 @@ inputs:
   branch-prefix:
     description: "Prefijo de la rama que se crea."
     required: false
-    default: "forge"
+    default: "refrendo"
   base:
     description: "Rama base del pull request."
     required: false
@@ -67,19 +67,19 @@ inputs:
 outputs:
   status:
     description: "verified | unverified | reverted | exhausted | failed"
-    value: ${{ steps.forge.outputs.status }}
+    value: ${{ steps.refrendo.outputs.status }}
   verified:
     description: "true solo si las puertas del proyecto pasaron."
-    value: ${{ steps.forge.outputs.verified }}
+    value: ${{ steps.refrendo.outputs.verified }}
   cost-usd:
     description: "Coste real del run."
-    value: ${{ steps.forge.outputs['cost-usd'] }}
+    value: ${{ steps.refrendo.outputs['cost-usd'] }}
   files-changed:
     description: "Número de ficheros modificados."
-    value: ${{ steps.forge.outputs['files-changed'] }}
+    value: ${{ steps.refrendo.outputs['files-changed'] }}
   branch:
     description: "Rama creada, vacía si no se comiteó nada."
-    value: ${{ steps.forge.outputs.branch }}
+    value: ${{ steps.refrendo.outputs.branch }}
   pr-url:
     description: "URL del pull request, vacía si no se abrió."
     value: ${{ steps.pr.outputs.url }}
@@ -92,19 +92,19 @@ runs:
       with:
         node-version: "24"
 
-    - name: Instalar Forge
+    - name: Instalar Refrendo
       shell: bash
       run: npm ci --prefix "$GITHUB_ACTION_PATH"
 
     - name: Ejecutar el agente
-      id: forge
+      id: refrendo
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:
         ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
-        FORGE_GOAL: ${{ inputs.goal }}
-        FORGE_ACCEPTANCE: ${{ inputs.acceptance }}
-        FORGE_CONSTRAINTS: ${{ inputs.constraints }}
+        REFRENDO_GOAL: ${{ inputs.goal }}
+        REFRENDO_ACCEPTANCE: ${{ inputs.acceptance }}
+        REFRENDO_CONSTRAINTS: ${{ inputs.constraints }}
       run: |
         set -euo pipefail
 
@@ -112,21 +112,21 @@ runs:
         args=()
         while IFS= read -r line; do
           [ -n "$line" ] && args+=(--accept "$line")
-        done <<< "$FORGE_ACCEPTANCE"
+        done <<< "$REFRENDO_ACCEPTANCE"
         while IFS= read -r line; do
           [ -n "$line" ] && args+=(--constraint "$line")
-        done <<< "$FORGE_CONSTRAINTS"
+        done <<< "$REFRENDO_CONSTRAINTS"
 
         [ "${{ inputs.auto-approve }}" = "true" ] && args+=(--yes)
 
         # `ci` sale con 0 únicamente si el run queda verificado. No se usa
         # `continue-on-error`: si no está verificado, el job debe fallar.
-        node --import tsx "$GITHUB_ACTION_PATH/packages/cli/src/index.ts" ci "$FORGE_GOAL" \
+        node --import tsx "$GITHUB_ACTION_PATH/packages/cli/src/index.ts" ci "$REFRENDO_GOAL" \
           --model "${{ inputs.model }}" \
           --effort "${{ inputs.effort }}" \
           --max-cost "${{ inputs.max-cost }}" \
           --branch-prefix "${{ inputs.branch-prefix }}" \
-          --report "$RUNNER_TEMP/forge-report.md" \
+          --report "$RUNNER_TEMP/refrendo-report.md" \
           "${args[@]}"
 
     # Aquí, y solo aquí, sale el código de la máquina. El agente nunca publica:
@@ -134,19 +134,19 @@ runs:
     # workflow, con las credenciales del pipeline.
     - name: Publicar la rama y abrir el pull request
       id: pr
-      if: ${{ steps.forge.outputs.verified == 'true' && steps.forge.outputs.branch != '' && inputs.create-pr == 'true' }}
+      if: ${{ steps.refrendo.outputs.verified == 'true' && steps.refrendo.outputs.branch != '' && inputs.create-pr == 'true' }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:
         GH_TOKEN: ${{ inputs.github-token }}
       run: |
         set -euo pipefail
-        BRANCH="${{ steps.forge.outputs.branch }}"
+        BRANCH="${{ steps.refrendo.outputs.branch }}"
         git push origin "$BRANCH"
         URL=$(gh pr create \
           --base "${{ inputs.base }}" \
           --head "$BRANCH" \
           --title "${{ inputs.goal }}" \
-          --body-file "$RUNNER_TEMP/forge-report.md")
+          --body-file "$RUNNER_TEMP/refrendo-report.md")
         echo "url=$URL" >> "$GITHUB_OUTPUT"
         echo "Pull request: $URL" >> "$GITHUB_STEP_SUMMARY"

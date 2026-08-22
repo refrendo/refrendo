@@ -1,5 +1,5 @@
 {
-  "name": "@forge/core",
+  "name": "@refrendo/core",
   "version": "0.1.0",
   "private": false,
   "type": "module",
@@ -18,12 +18,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TU-USUARIO/forge.git"
+    "url": "git+https://github.com/TU-USUARIO/refrendo.git"
   },
   "bugs": {
-    "url": "https://github.com/TU-USUARIO/forge/issues"
+    "url": "https://github.com/TU-USUARIO/refrendo/issues"
   },
-  "homepage": "https://github.com/TU-USUARIO/forge",
+  "homepage": "https://github.com/TU-USUARIO/refrendo",
   "engines": {
     "node": ">=22"
   },

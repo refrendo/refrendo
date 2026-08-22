@@ -34,7 +34,7 @@ const VERDICT: Record<RunResult["status"], { icon: string; label: string; meanin
 /**
  * Informe en Markdown de un run.
  *
- * Es el formato en el que Forge entra en el sitio donde ya trabaja el equipo:
+ * Es el formato en el que Refrendo entra en el sitio donde ya trabaja el equipo:
  * el cuerpo de un pull request, el resumen de un job de CI, un mensaje de chat.
  * Se escribe para alguien que no vio el run y tiene que decidir si se fia.
  */
@@ -102,7 +102,7 @@ export function renderMarkdownReport(result: RunResult, options: ReportOptions =
   out.push(
     "---",
     "",
-    `<sub>Forge · $${result.usage.costUsd.toFixed(4)} · ${result.usage.requests} peticiones · ${(result.durationMs / 1000).toFixed(0)} s</sub>`,
+    `<sub>Refrendo · $${result.usage.costUsd.toFixed(4)} · ${result.usage.requests} peticiones · ${(result.durationMs / 1000).toFixed(0)} s</sub>`,
   );
 
   return out.join("\n");

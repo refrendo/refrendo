@@ -229,7 +229,7 @@ ${body.value}
 
 function header(): Raw {
   return html`<div class="top">
-  <a class="brand" href="/">forge<span>.</span></a>
+  <a class="brand" href="/">refrendo<span>.</span></a>
   <nav>
     <a href="/">Runs</a>
     <a href="/team">Equipo</a>

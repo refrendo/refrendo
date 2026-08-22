@@ -1,4 +1,4 @@
-import type { ForgeEvent, Phase, RunResult, UsageTotals } from "@forge/core";
+import type { RefrendoEvent, Phase, RunResult, UsageTotals } from "@refrendo/core";
 
 const useColor = process.stdout.isTTY === true && !process.env["NO_COLOR"];
 
@@ -37,7 +37,7 @@ export interface RendererOptions {
 /**
  * Pinta el stream de eventos en la terminal.
  *
- * El renderizador solo consume `ForgeEvent`, nunca llama al motor. Esa frontera
+ * El renderizador solo consume `RefrendoEvent`, nunca llama al motor. Esa frontera
  * es lo que permite que la futura UI web y la sesion compartida de equipo se
  * construyan sobre el mismo stream sin tocar el nucleo.
  */
@@ -56,11 +56,11 @@ export function createRenderer(options: RendererOptions = {}) {
     process.stdout.write(`${text}\n`);
   };
 
-  return (event: ForgeEvent): void => {
+  return (event: RefrendoEvent): void => {
     switch (event.type) {
       case "run_started":
         if (options.quiet) break;
-        line(`${c.bold("forge")} ${c.dim(event.workspace)}`);
+        line(`${c.bold("refrendo")} ${c.dim(event.workspace)}`);
         line(`${c.cyan("objetivo")} ${event.contract.goal}`);
         break;
 

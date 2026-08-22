@@ -3,8 +3,8 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ForgeAgent } from "../agent.js";
-import { EventBus, type ForgeEvent } from "../events.js";
+import { RefrendoAgent } from "../agent.js";
+import { EventBus, type RefrendoEvent } from "../events.js";
 import { AnthropicProvider } from "../provider/anthropic.js";
 import { Workspace } from "../workspace.js";
 import type { Gate } from "../verify.js";
@@ -12,10 +12,10 @@ import type { Gate } from "../verify.js";
 let root: string;
 let workspace: Workspace;
 let bus: EventBus;
-let events: ForgeEvent[];
+let events: RefrendoEvent[];
 
 beforeEach(async () => {
-  root = await fs.mkdtemp(path.join(os.tmpdir(), "forge-agent-"));
+  root = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-agent-"));
   workspace = new Workspace(root);
   bus = new EventBus();
   events = [];
@@ -89,7 +89,7 @@ const PLAN = toolUse("submit_plan", {
 const FINISH = toolUse("finish", { summary: "hecho", acceptance_met: [], outstanding: [] });
 
 const agentWith = (provider: AnthropicProvider, overrides = {}) =>
-  new ForgeAgent({
+  new RefrendoAgent({
     workspace,
     provider,
     policy: { autoApprove: true },

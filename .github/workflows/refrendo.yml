@@ -1,7 +1,7 @@
-name: Forge
+name: Refrendo
 
 # Dos disparadores, ambos con una persona detrás: nadie quiere un agente que se
-# despierte solo. El de issues exige la etiqueta `forge`, que es un acto
+# despierte solo. El de issues exige la etiqueta `refrendo`, que es un acto
 # deliberado de alguien con permiso de escritura.
 on:
   workflow_dispatch:
@@ -24,8 +24,8 @@ on:
 
 jobs:
   agente:
-    # En issues solo corre con la etiqueta `forge`.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.label.name == 'forge' }}
+    # En issues solo corre con la etiqueta `refrendo`.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.label.name == 'refrendo' }}
     runs-on: ubuntu-latest
 
     permissions:
@@ -39,8 +39,8 @@ jobs:
           # El PR se abre contra la rama base, así que hace falta el historial.
           fetch-depth: 0
 
-      - name: Ejecutar Forge
-        id: forge
+      - name: Ejecutar Refrendo
+        id: refrendo
         uses: ./
         with:
           goal: ${{ inputs.goal || github.event.issue.title }}
@@ -55,9 +55,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ "${{ steps.forge.outputs.verified }}" = "true" ]; then
-            BODY="✅ Verificado — ${{ steps.forge.outputs.pr-url }}"
+          if [ "${{ steps.refrendo.outputs.verified }}" = "true" ]; then
+            BODY="✅ Verificado — ${{ steps.refrendo.outputs.pr-url }}"
           else
-            BODY="❌ El agente no consiguió dejar el proyecto en verde (estado: ${{ steps.forge.outputs.status || 'error' }}). Los cambios se revirtieron; no hay nada que revisar. Coste: \$${{ steps.forge.outputs.cost-usd || '0' }}."
+            BODY="❌ El agente no consiguió dejar el proyecto en verde (estado: ${{ steps.refrendo.outputs.status || 'error' }}). Los cambios se revirtieron; no hay nada que revisar. Coste: \$${{ steps.refrendo.outputs.cost-usd || '0' }}."
           fi
           gh issue comment "${{ github.event.issue.number }}" --body "$BODY"

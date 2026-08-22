@@ -7,7 +7,7 @@ import {
   CONFIG_FILENAME,
   DEFAULT_CONFIG,
   EventBus,
-  ForgeAgent,
+  RefrendoAgent,
   Policy,
   Workspace,
   defaultPolicyConfig,
@@ -17,18 +17,18 @@ import {
   type ApprovalRequest,
   type Effort,
   type TaskContract,
-} from "@forge/core";
+} from "@refrendo/core";
 import { c, createRenderer, renderResult } from "./render.js";
 
 const USAGE = `
-${c.bold("forge")} — agente de trabajo verificado
+${c.bold("refrendo")} — agente de trabajo verificado
 
-  forge run <objetivo>      Planifica, aplica y verifica un cambio
-  forge ci <objetivo>       Como 'run', pero comitea en una rama solo si queda verificado
-  forge plan <objetivo>     Solo planifica; no toca nada
-  forge verify              Ejecuta las puertas de calidad del proyecto
-  forge init                Crea ${CONFIG_FILENAME} con la configuracion por defecto
-  forge serve               Arranca el servidor: historial, trazas y la pagina de cada run
+  refrendo run <objetivo>      Planifica, aplica y verifica un cambio
+  refrendo ci <objetivo>       Como 'run', pero comitea en una rama solo si queda verificado
+  refrendo plan <objetivo>     Solo planifica; no toca nada
+  refrendo verify              Ejecuta las puertas de calidad del proyecto
+  refrendo init                Crea ${CONFIG_FILENAME} con la configuracion por defecto
+  refrendo serve               Arranca el servidor: historial, trazas y la pagina de cada run
 
 Opciones
   -C, --dir <ruta>          Raiz del workspace (por defecto: directorio actual)
@@ -42,7 +42,7 @@ Opciones
       --port <n>            Puerto de 'serve' (por defecto 4317)
       --root <ruta>         Repositorio que 'serve' puede tocar (repetible)
       --demo                Siembra un run de ejemplo si el historial esta vacio
-      --branch-prefix <p>   Prefijo de rama en 'ci' (por defecto: forge)
+      --branch-prefix <p>   Prefijo de rama en 'ci' (por defecto: refrendo)
       --no-commit           En 'ci', no crear rama ni commit
       --report <fichero>    Escribe el informe en Markdown
       --no-record           No guardar el run en el historial local
@@ -114,12 +114,12 @@ async function main(argv: string[]): Promise<number> {
       return initConfig(workspace);
 
     case "serve": {
-      const { startServer, seedDemoRun } = await import("@forge/server");
+      const { startServer, seedDemoRun } = await import("@refrendo/server");
       const server = await startServer({
         allowedRoots: values.root && values.root.length > 0 ? values.root.map((r) => path.resolve(r)) : [root],
         port: values.port ? Number(values.port) : 4317,
-        dbFile: path.join(root, ".forge", "runs.db"),
-        token: process.env["FORGE_TOKEN"],
+        dbFile: path.join(root, ".refrendo", "runs.db"),
+        token: process.env["REFRENDO_TOKEN"],
         model: values.model ?? config.model,
         effort: (values.effort as Effort | undefined) ?? config.effort,
         limits: config.limits,
@@ -137,9 +137,9 @@ async function main(argv: string[]): Promise<number> {
       }
 
       process.stdout.write(
-        `${c.bold("forge serve")} ${c.dim(server.url)}\n` +
+        `${c.bold("refrendo serve")} ${c.dim(server.url)}\n` +
           `  repositorios: ${(values.root ?? [root]).join(", ")}\n` +
-          `  acceso: ${process.env["FORGE_TOKEN"] ? c.green("token requerido") : c.yellow("solo local (define FORGE_TOKEN para abrirlo)")}\n` +
+          `  acceso: ${process.env["REFRENDO_TOKEN"] ? c.green("token requerido") : c.yellow("solo local (define REFRENDO_TOKEN para abrirlo)")}\n` +
           (demoUrl ? `  ejemplo: ${c.cyan(demoUrl)}\n` : "") +
           `\n  Ctrl+C para parar.\n`,
       );
@@ -171,7 +171,7 @@ async function main(argv: string[]): Promise<number> {
     case "plan": {
       const goal = positionals.slice(1).join(" ").trim();
       if (!goal) {
-        process.stderr.write(`${c.red("Falta el objetivo.")}\nEjemplo: forge run "anade paginacion al endpoint de usuarios"\n`);
+        process.stderr.write(`${c.red("Falta el objetivo.")}\nEjemplo: refrendo run "anade paginacion al endpoint de usuarios"\n`);
         return 1;
       }
 
@@ -196,9 +196,9 @@ async function main(argv: string[]): Promise<number> {
         }),
       );
 
-      let lastResult: import("@forge/core").RunResult | null = null;
+      let lastResult: import("@refrendo/core").RunResult | null = null;
 
-      const agent = new ForgeAgent({
+      const agent = new RefrendoAgent({
         workspace,
         provider: {
           model: values.model ?? config.model,
@@ -224,8 +224,8 @@ async function main(argv: string[]): Promise<number> {
       let closeStore: (() => void) | null = null;
       if (values["no-record"] !== true) {
         try {
-          const { RunStore, recordRun } = await import("@forge/server");
-          const store = await RunStore.open(path.join(root, ".forge", "runs.db"));
+          const { RunStore, recordRun } = await import("@refrendo/server");
+          const store = await RunStore.open(path.join(root, ".refrendo", "runs.db"));
           const recording = recordRun(store, {
             contract,
             workspace: root,
@@ -258,7 +258,7 @@ async function main(argv: string[]): Promise<number> {
 
       if (receiptUrl && !values.json) {
         process.stdout.write(
-          `${c.dim("recibo")} ${c.cyan(receiptUrl)} ${c.dim("— arranca `forge serve` para abrirlo")}\n`,
+          `${c.dim("recibo")} ${c.cyan(receiptUrl)} ${c.dim("— arranca `refrendo serve` para abrirlo")}\n`,
         );
       }
 
@@ -266,7 +266,7 @@ async function main(argv: string[]): Promise<number> {
         const { finishCi } = await import("./ci.js");
         const outcome = await finishCi(result, {
           cwd: root,
-          branchPrefix: values["branch-prefix"] ?? "forge",
+          branchPrefix: values["branch-prefix"] ?? "refrendo",
           commit: values["no-commit"] !== true,
           actorName: process.env["GITHUB_ACTOR"] ?? values.actor,
           actorEmail: values["actor-email"],

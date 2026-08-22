@@ -4,7 +4,7 @@ import type { BudgetLimits } from "./budget.js";
 import type { Effort } from "./provider/anthropic.js";
 import type { Gate } from "./verify.js";
 
-export interface ForgeConfig {
+export interface RefrendoConfig {
   model: string;
   effort: Effort;
   limits: BudgetLimits;
@@ -22,9 +22,9 @@ export interface ForgeConfig {
   protectedPaths?: string[];
 }
 
-export const CONFIG_FILENAME = "forge.config.json";
+export const CONFIG_FILENAME = "refrendo.config.json";
 
-export const DEFAULT_CONFIG: ForgeConfig = {
+export const DEFAULT_CONFIG: RefrendoConfig = {
   model: "claude-opus-5",
   effort: "high",
   limits: { maxCostUsd: 2, maxIterations: 25, maxRepairAttempts: 3 },
@@ -37,18 +37,18 @@ export const DEFAULT_CONFIG: ForgeConfig = {
  * El fichero se versiona con el repositorio a proposito — las puertas de calidad
  * y el tope de gasto son decisiones de equipo, no preferencias de cada maquina.
  */
-export async function loadConfig(workspaceRoot: string): Promise<ForgeConfig> {
+export async function loadConfig(workspaceRoot: string): Promise<RefrendoConfig> {
   const fromFile = await readConfigFile(path.join(workspaceRoot, CONFIG_FILENAME));
 
   return {
-    model: process.env["FORGE_MODEL"] ?? fromFile.model ?? DEFAULT_CONFIG.model,
-    effort: (process.env["FORGE_EFFORT"] as Effort | undefined) ?? fromFile.effort ?? DEFAULT_CONFIG.effort,
+    model: process.env["REFRENDO_MODEL"] ?? fromFile.model ?? DEFAULT_CONFIG.model,
+    effort: (process.env["REFRENDO_EFFORT"] as Effort | undefined) ?? fromFile.effort ?? DEFAULT_CONFIG.effort,
     limits: {
-      maxCostUsd: numberFromEnv("FORGE_MAX_COST_USD") ?? fromFile.limits?.maxCostUsd ?? DEFAULT_CONFIG.limits.maxCostUsd,
+      maxCostUsd: numberFromEnv("REFRENDO_MAX_COST_USD") ?? fromFile.limits?.maxCostUsd ?? DEFAULT_CONFIG.limits.maxCostUsd,
       maxIterations:
-        numberFromEnv("FORGE_MAX_ITERATIONS") ?? fromFile.limits?.maxIterations ?? DEFAULT_CONFIG.limits.maxIterations,
+        numberFromEnv("REFRENDO_MAX_ITERATIONS") ?? fromFile.limits?.maxIterations ?? DEFAULT_CONFIG.limits.maxIterations,
       maxRepairAttempts:
-        numberFromEnv("FORGE_MAX_REPAIRS") ?? fromFile.limits?.maxRepairAttempts ?? DEFAULT_CONFIG.limits.maxRepairAttempts,
+        numberFromEnv("REFRENDO_MAX_REPAIRS") ?? fromFile.limits?.maxRepairAttempts ?? DEFAULT_CONFIG.limits.maxRepairAttempts,
     },
     ...(fromFile.gates ? { gates: fromFile.gates } : {}),
     ...(fromFile.allowedCommands ? { allowedCommands: fromFile.allowedCommands } : {}),
@@ -57,10 +57,10 @@ export async function loadConfig(workspaceRoot: string): Promise<ForgeConfig> {
   };
 }
 
-async function readConfigFile(file: string): Promise<Partial<ForgeConfig>> {
+async function readConfigFile(file: string): Promise<Partial<RefrendoConfig>> {
   try {
     const raw = await fs.readFile(file, "utf8");
-    return JSON.parse(raw) as Partial<ForgeConfig>;
+    return JSON.parse(raw) as Partial<RefrendoConfig>;
   } catch {
     // Sin fichero de configuracion se trabaja con los valores por defecto;
     // un JSON invalido se ignora igual para no bloquear el run por un typo.

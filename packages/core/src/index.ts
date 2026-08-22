@@ -1,15 +1,15 @@
-export { ForgeAgent, type AgentOptions } from "./agent.js";
+export { RefrendoAgent, type AgentOptions } from "./agent.js";
 export { Budget, DEFAULT_LIMITS, PRICING, type BudgetLimits, type UsageLike } from "./budget.js";
-export { CONFIG_FILENAME, DEFAULT_CONFIG, loadConfig, type ForgeConfig } from "./config.js";
+export { CONFIG_FILENAME, DEFAULT_CONFIG, loadConfig, type RefrendoConfig } from "./config.js";
 export {
   BudgetExceeded,
-  ForgeError,
+  RefrendoError,
   MissingCredentials,
   PolicyDenied,
   SandboxViolation,
   ToolInvocationError,
 } from "./errors.js";
-export { EventBus, type EmitFn, type ForgeEvent, type Listener, type Phase } from "./events.js";
+export { EventBus, type EmitFn, type RefrendoEvent, type Listener, type Phase } from "./events.js";
 export { ChangeJournal } from "./journal.js";
 export { runLoop, type LoopOptions, type LoopResult, type LoopStop } from "./loop.js";
 export {

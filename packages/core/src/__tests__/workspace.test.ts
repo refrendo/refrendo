@@ -9,7 +9,7 @@ let root: string;
 let workspace: Workspace;
 
 beforeEach(async () => {
-  root = await fs.mkdtemp(path.join(os.tmpdir(), "forge-ws-"));
+  root = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-ws-"));
   workspace = new Workspace(root);
 });
 
@@ -37,7 +37,7 @@ describe("confinamiento de rutas", () => {
   });
 
   it("bloquea el escape a traves de un enlace simbolico", async () => {
-    const outside = await fs.mkdtemp(path.join(os.tmpdir(), "forge-fuera-"));
+    const outside = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-fuera-"));
     try {
       // En Windows los enlaces de directorio requieren privilegios; el tipo
       // "junction" no, y sirve igual para el caso que nos importa.

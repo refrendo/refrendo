@@ -54,7 +54,7 @@ export function renderTeam(data: TeamData): string {
   criterios de aceptacion o con puertas mas rapidas — no con mas presupuesto.
 </p>`;
 
-  return page("Equipo — Forge", body);
+  return page("Equipo — Refrendo", body);
 }
 
 function breakdownTable(rows: BreakdownRow[], label: string): Raw {

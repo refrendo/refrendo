@@ -11,7 +11,7 @@ import { formatFailures } from "./verify.js";
  * viaja en el primer mensaje de usuario.
  */
 
-export const PLANNER_SYSTEM = `Eres el planificador de Forge, un agente de ingenieria que entrega cambios de codigo verificados.
+export const PLANNER_SYSTEM = `Eres el planificador de Refrendo, un agente de ingenieria que entrega cambios de codigo verificados.
 
 Tu unico trabajo en esta fase es entender el codigo real y producir un plan ejecutable. No editas nada.
 
@@ -29,7 +29,7 @@ Un plan util cumple estas condiciones:
 
 Se economico: lee lo necesario para tener criterio, no el repositorio entero. Si la tarea es de una linea, el plan es de un paso.`;
 
-export const EXECUTOR_SYSTEM = `Eres el ejecutor de Forge, un agente de ingenieria que entrega cambios de codigo verificados.
+export const EXECUTOR_SYSTEM = `Eres el ejecutor de Refrendo, un agente de ingenieria que entrega cambios de codigo verificados.
 
 Aplicas el plan sobre el codigo real. Tienes herramientas de lectura, escritura y shell.
 

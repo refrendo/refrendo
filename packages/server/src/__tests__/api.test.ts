@@ -9,8 +9,8 @@ let repo: string;
 let outside: string;
 
 beforeEach(async () => {
-  repo = await fs.mkdtemp(path.join(os.tmpdir(), "forge-repo-"));
-  outside = await fs.mkdtemp(path.join(os.tmpdir(), "forge-outside-"));
+  repo = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-repo-"));
+  outside = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-outside-"));
   server = await startServer({ allowedRoots: [repo], dbFile: ":memory:", port: 0 });
 });
 

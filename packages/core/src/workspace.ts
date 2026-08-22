@@ -10,7 +10,7 @@ const DEFAULT_IGNORED = new Set([
   "coverage",
   ".next",
   ".turbo",
-  ".forge",
+  ".refrendo",
   "__pycache__",
   ".venv",
 ]);

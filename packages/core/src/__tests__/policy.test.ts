@@ -130,7 +130,7 @@ describe("rutas protegidas", () => {
     ".github/workflows/ci.yml",
     ".github/workflows/anidado/otro.yml",
     ".github/actions/x/action.yml",
-    "forge.config.json",
+    "refrendo.config.json",
     "action.yml",
     ".git/config",
   ])("impide escribir en %s", (path) => {

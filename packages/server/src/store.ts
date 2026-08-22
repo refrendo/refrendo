@@ -2,7 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { promises as fs } from "node:fs";
-import type { ForgeEvent, RunResult, TaskContract } from "@forge/core";
+import type { RefrendoEvent, RunResult, TaskContract } from "@refrendo/core";
 
 /** Un run en curso todavia no tiene veredicto. */
 export type StoredStatus = RunResult["status"] | "running";
@@ -24,7 +24,7 @@ export interface RunRow {
 export interface StoredEvent {
   seq: number;
   at: string;
-  event: ForgeEvent;
+  event: RefrendoEvent;
 }
 
 export interface CreateRunInput {
@@ -132,7 +132,7 @@ export class RunStore {
    * cliente para reanudar el stream: un hueco o un duplicado significaria que
    * un espectador se pierde parte de la traza sin enterarse.
    */
-  appendEvent(runId: string, event: ForgeEvent): number {
+  appendEvent(runId: string, event: RefrendoEvent): number {
     // `BEGIN IMMEDIATE` toma el bloqueo de escritura ya: con el `DEFERRED` por
     // defecto, dos runs simultaneos podrian leer el mismo MAX(seq) y chocar en
     // la clave primaria.
@@ -202,7 +202,7 @@ export class RunStore {
     return rows.map((row) => ({
       seq: row.seq,
       at: row.at,
-      event: JSON.parse(row.payload) as ForgeEvent,
+      event: JSON.parse(row.payload) as RefrendoEvent,
     }));
   }
 

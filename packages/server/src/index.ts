@@ -1,5 +1,5 @@
 import { createServer, type Server } from "node:http";
-import type { BudgetLimits, Effort } from "@forge/core";
+import type { BudgetLimits, Effort } from "@refrendo/core";
 import { createHandler } from "./api.js";
 import { RunManager } from "./runner.js";
 import { RunStore } from "./store.js";
@@ -44,7 +44,7 @@ export async function startServer(config: ServerConfig): Promise<RunningServer> 
   // Sin token no se acepta trafico externo, asi que escuchar en 0.0.0.0 solo
   // seria una invitacion a que alguien descubra el puerto y no pueda usarlo.
   const host = config.host ?? (config.token ? "0.0.0.0" : "127.0.0.1");
-  const store = await RunStore.open(config.dbFile ?? ".forge/runs.db");
+  const store = await RunStore.open(config.dbFile ?? ".refrendo/runs.db");
   const runs = new RunManager({
     store,
     allowedRoots: config.allowedRoots,

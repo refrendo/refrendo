@@ -1,10 +1,10 @@
-import type { ForgeEvent, RunResult } from "@forge/core";
+import type { RefrendoEvent, RunResult } from "@refrendo/core";
 import type { RunStore } from "./store.js";
 
 /**
  * Siembra un run de ejemplo completo.
  *
- * Existe por una razon comercial, no de desarrollo: alguien que descubre Forge
+ * Existe por una razon comercial, no de desarrollo: alguien que descubre Refrendo
  * tiene que poder ver que hace en treinta segundos, sin clave de API, sin
  * conectar un repositorio y sin esperar a que un agente termine. La pagina del
  * run es el producto, y esto la pone delante de sus ojos de inmediato.
@@ -65,7 +65,7 @@ export function seedDemoRun(store: RunStore): string {
     output: "",
   };
 
-  const events: ForgeEvent[] = [
+  const events: RefrendoEvent[] = [
     { type: "run_started", contract, workspace: "/repos/api", at: new Date().toISOString() },
     { type: "phase_started", phase: "plan" },
     { type: "tool_requested", id: "t1", name: "list_files", input: { path: "src" } },
@@ -138,7 +138,7 @@ export function seedDemoRun(store: RunStore): string {
   const result: RunResult = {
     status: "verified",
     contract,
-    plan: (events.find((event) => event.type === "plan_ready") as Extract<ForgeEvent, { type: "plan_ready" }>).plan,
+    plan: (events.find((event) => event.type === "plan_ready") as Extract<RefrendoEvent, { type: "plan_ready" }>).plan,
     summary:
       "Añadida paginación a GET /users con parámetros page y limit. El primer intento devolvía 500 cuando page era 0 porque el offset salía negativo; ahora se valida el rango antes de consultar y se responde 400 con un mensaje explícito. Añadido test del caso límite.",
     changes: [

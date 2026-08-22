@@ -1,10 +1,10 @@
-import type { ForgeEvent, RunResult } from "@forge/core";
+import type { RefrendoEvent, RunResult } from "@refrendo/core";
 import type { CreateRunInput, RunStore } from "./store.js";
 
 export interface Recording {
   id: string;
   /** Se engancha al bus del agente con `bus.on(recording.listener)`. */
-  listener: (event: ForgeEvent) => void;
+  listener: (event: RefrendoEvent) => void;
   finish(result: RunResult): void;
 }
 
@@ -13,7 +13,7 @@ export interface Recording {
  *
  * `RunManager` lanza el agente y ademas lo graba; esto solo graba. Existe
  * porque el recibo es el producto y hasta ahora solo lo producian los runs
- * lanzados por la API — un `forge run` desde la terminal, que es la puerta de
+ * lanzados por la API — un `refrendo run` desde la terminal, que es la puerta de
  * entrada mas usada, no dejaba rastro. La evidencia no puede depender de por
  * donde entraste.
  */

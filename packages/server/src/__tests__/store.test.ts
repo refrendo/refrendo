@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { RunResult } from "@forge/core";
+import type { RunResult } from "@refrendo/core";
 import { RunStore } from "../store.js";
 
 let store: RunStore;

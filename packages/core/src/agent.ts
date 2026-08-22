@@ -53,10 +53,10 @@ export interface AgentOptions {
  * Orquestador de un contrato de tarea.
  *
  * El ciclo es planificar -> ejecutar -> verificar -> reparar -> consolidar o
- * revertir. La fase de verificacion es lo que separa a Forge de un asistente
+ * revertir. La fase de verificacion es lo que separa a Refrendo de un asistente
  * de codigo: el agente no decide si ha terminado, lo decide el proyecto.
  */
-export class ForgeAgent {
+export class RefrendoAgent {
   private readonly workspace: Workspace;
   private readonly provider: AnthropicProvider;
   private readonly policy: Policy;

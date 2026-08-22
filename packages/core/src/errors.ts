@@ -1,6 +1,6 @@
 /** Errores de dominio. Todo fallo esperable tiene un tipo; nada se comunica por string matching. */
 
-export class ForgeError extends Error {
+export class RefrendoError extends Error {
   constructor(
     message: string,
     readonly code: string,
@@ -12,7 +12,7 @@ export class ForgeError extends Error {
 }
 
 /** Una ruta intento salir de la raiz del workspace. */
-export class SandboxViolation extends ForgeError {
+export class SandboxViolation extends RefrendoError {
   constructor(requested: string, root: string) {
     super(
       `La ruta "${requested}" queda fuera del workspace (${root}). Operacion bloqueada.`,
@@ -23,7 +23,7 @@ export class SandboxViolation extends ForgeError {
 }
 
 /** La politica de permisos rechazo la operacion (denylist o aprobacion denegada). */
-export class PolicyDenied extends ForgeError {
+export class PolicyDenied extends RefrendoError {
   constructor(operation: string, reason: string) {
     super(`Operacion denegada por politica: ${operation} — ${reason}`, "policy_denied", {
       operation,
@@ -33,7 +33,7 @@ export class PolicyDenied extends ForgeError {
 }
 
 /** Se agoto el presupuesto de coste, tokens o iteraciones. */
-export class BudgetExceeded extends ForgeError {
+export class BudgetExceeded extends RefrendoError {
   constructor(readonly kind: "cost" | "tokens" | "iterations", limit: number, actual: number) {
     super(
       `Presupuesto agotado (${kind}): limite ${limit}, consumido ${actual}.`,
@@ -44,7 +44,7 @@ export class BudgetExceeded extends ForgeError {
 }
 
 /** El modelo pidio una herramienta inexistente o con argumentos invalidos. */
-export class ToolInvocationError extends ForgeError {
+export class ToolInvocationError extends RefrendoError {
   constructor(tool: string, reason: string) {
     super(`Herramienta "${tool}": ${reason}`, "tool_invocation_error", { tool, reason });
   }
@@ -57,7 +57,7 @@ export class ToolInvocationError extends ForgeError {
  * quien acaba de instalar la herramienta. Este es el primer error que ve casi
  * todo el mundo, y de el depende que siga o abandone.
  */
-export class MissingCredentials extends ForgeError {
+export class MissingCredentials extends RefrendoError {
   constructor(detail: string) {
     super(
       [

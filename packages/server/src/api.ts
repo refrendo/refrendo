@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { timingSafeEqual } from "node:crypto";
-import type { TaskContract } from "@forge/core";
+import type { TaskContract } from "@refrendo/core";
 import { renderIndex } from "./render/index-page.js";
 import { renderTeam } from "./render/team.js";
 import { shareSecret, signShare, verifyShare } from "./share.js";
@@ -181,7 +181,7 @@ function streamRun(req: IncomingMessage, res: ServerResponse, options: ApiOption
   const send = (entry: StoredEvent): void => {
     const line = renderEvent(entry);
     res.write(`id: ${entry.seq}\n`);
-    res.write("event: forge\n");
+    res.write("event: refrendo\n");
     res.write(
       `data: ${JSON.stringify({ seq: entry.seq, type: entry.event.type, html: line ? line.value : null })}\n\n`,
     );

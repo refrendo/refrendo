@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { renderMarkdownReport, renderOneLiner, runCommand, type RunResult } from "@forge/core";
+import { renderMarkdownReport, renderOneLiner, runCommand, type RunResult } from "@refrendo/core";
 import { finishCi, commitMessage } from "../ci.js";
 import { branchNameFor, changedFiles, commitOnNewBranch, currentBranch, isGitRepo } from "../git.js";
 
@@ -13,7 +13,7 @@ let outputFile: string;
 const sh = (cwd: string, command: string) => runCommand(command, { cwd, timeoutMs: 30_000 });
 
 beforeEach(async () => {
-  repo = await fs.mkdtemp(path.join(os.tmpdir(), "forge-git-"));
+  repo = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-git-"));
   await sh(repo, "git init -b main");
   await sh(repo, "git config user.name Prueba");
   await sh(repo, "git config user.email prueba@ejemplo.dev");
@@ -22,7 +22,7 @@ beforeEach(async () => {
   await sh(repo, "git commit -m inicial");
 
   // Fuera del repositorio a proposito: dentro contaria como cambio sin comitear.
-  scratch = await fs.mkdtemp(path.join(os.tmpdir(), "forge-ci-out-"));
+  scratch = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-ci-out-"));
   outputFile = path.join(scratch, "outputs.txt");
   process.env["GITHUB_OUTPUT"] = outputFile;
   delete process.env["GITHUB_STEP_SUMMARY"];
@@ -76,7 +76,7 @@ const readOutputs = async (): Promise<Record<string, string>> => {
 describe("nombres de rama", () => {
   it("quita acentos y caracteres que Git rechaza", () => {
     const branch = branchNameFor("Añadir paginación: ¿página o límite?");
-    expect(branch).toMatch(/^forge\/anadir-paginacion-pagina-o-limite-[a-z0-9]+$/);
+    expect(branch).toMatch(/^refrendo\/anadir-paginacion-pagina-o-limite-[a-z0-9]+$/);
   });
 
   it("respeta el prefijo y acorta objetivos largos", () => {
@@ -86,7 +86,7 @@ describe("nombres de rama", () => {
   });
 
   it("no deja una rama sin nombre cuando el objetivo no tiene letras", () => {
-    expect(branchNameFor("¿?¡!")).toMatch(/^forge\/cambio-/);
+    expect(branchNameFor("¿?¡!")).toMatch(/^refrendo\/cambio-/);
   });
 
   it("no repite el mismo nombre en llamadas distintas", () => {
@@ -98,7 +98,7 @@ describe("nombres de rama", () => {
 describe("operaciones de Git", () => {
   it("reconoce un repositorio y un directorio suelto", async () => {
     expect(await isGitRepo(repo)).toBe(true);
-    const plain = await fs.mkdtemp(path.join(os.tmpdir(), "forge-plain-"));
+    const plain = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-plain-"));
     try {
       expect(await isGitRepo(plain)).toBe(false);
     } finally {
@@ -114,18 +114,18 @@ describe("operaciones de Git", () => {
 
   it("crea la rama y comitea todo", async () => {
     await fs.writeFile(path.join(repo, "nuevo.txt"), "hola\n");
-    const commit = await commitOnNewBranch(repo, { branch: "forge/prueba", message: "un cambio" });
+    const commit = await commitOnNewBranch(repo, { branch: "refrendo/prueba", message: "un cambio" });
 
-    expect(commit.branch).toBe("forge/prueba");
+    expect(commit.branch).toBe("refrendo/prueba");
     expect(commit.sha).toMatch(/^[0-9a-f]{40}$/);
-    expect(await currentBranch(repo)).toBe("forge/prueba");
+    expect(await currentBranch(repo)).toBe("refrendo/prueba");
     expect(await changedFiles(repo)).toEqual([]);
   });
 
   it("acepta mensajes con comillas, saltos de línea y acentos", async () => {
     await fs.writeFile(path.join(repo, "nuevo.txt"), "hola\n");
     const message = `Añadir "paginación"\n\nCon 'comillas' y $variables\n`;
-    await commitOnNewBranch(repo, { branch: "forge/raro", message });
+    await commitOnNewBranch(repo, { branch: "refrendo/raro", message });
 
     const log = await sh(repo, "git log -1 --pretty=%B");
     expect(log.stdout).toContain('Añadir "paginación"');
@@ -135,7 +135,7 @@ describe("operaciones de Git", () => {
   it("atribuye el commit a quien lanzó el run", async () => {
     await fs.writeFile(path.join(repo, "nuevo.txt"), "hola\n");
     await commitOnNewBranch(repo, {
-      branch: "forge/autoria",
+      branch: "refrendo/autoria",
       message: "cambio",
       authorName: "Ana Pérez",
       authorEmail: "ana@equipo.dev",
@@ -150,7 +150,7 @@ describe("operaciones de Git", () => {
   });
 
   it("se niega a comitear si no hay cambios", async () => {
-    await expect(commitOnNewBranch(repo, { branch: "forge/vacio", message: "nada" })).rejects.toThrow(
+    await expect(commitOnNewBranch(repo, { branch: "refrendo/vacio", message: "nada" })).rejects.toThrow(
       /no hay cambios/,
     );
   });
@@ -159,10 +159,10 @@ describe("operaciones de Git", () => {
 describe("cierre de CI — solo se comitea lo verificado", () => {
   it("comitea y sale con 0 cuando el run está verificado", async () => {
     await fs.writeFile(path.join(repo, "src.ts"), "cambio\n");
-    const outcome = await finishCi(result(), { cwd: repo, branchPrefix: "forge", commit: true });
+    const outcome = await finishCi(result(), { cwd: repo, branchPrefix: "refrendo", commit: true });
 
     expect(outcome.code).toBe(0);
-    expect(outcome.commit?.branch).toMatch(/^forge\//);
+    expect(outcome.commit?.branch).toMatch(/^refrendo\//);
     expect(await currentBranch(repo)).toBe(outcome.commit!.branch);
   });
 
@@ -170,7 +170,7 @@ describe("cierre de CI — solo se comitea lo verificado", () => {
     "no comitea nada y sale con 1 cuando el run acaba como %s",
     async (status) => {
       await fs.writeFile(path.join(repo, "basura.ts"), "no compila\n");
-      const outcome = await finishCi(result({ status }), { cwd: repo, branchPrefix: "forge", commit: true });
+      const outcome = await finishCi(result({ status }), { cwd: repo, branchPrefix: "refrendo", commit: true });
 
       expect(outcome.code).toBe(1);
       expect(outcome.commit).toBeNull();
@@ -180,7 +180,7 @@ describe("cierre de CI — solo se comitea lo verificado", () => {
   );
 
   it("verificado sin cambios no crea una rama vacía", async () => {
-    const outcome = await finishCi(result({ changes: [] }), { cwd: repo, branchPrefix: "forge", commit: true });
+    const outcome = await finishCi(result({ changes: [] }), { cwd: repo, branchPrefix: "refrendo", commit: true });
     expect(outcome.code).toBe(0);
     expect(outcome.commit).toBeNull();
     expect(outcome.reason).toContain("nada que comitear");
@@ -188,16 +188,16 @@ describe("cierre de CI — solo se comitea lo verificado", () => {
 
   it("respeta --no-commit", async () => {
     await fs.writeFile(path.join(repo, "src.ts"), "cambio\n");
-    const outcome = await finishCi(result(), { cwd: repo, branchPrefix: "forge", commit: false });
+    const outcome = await finishCi(result(), { cwd: repo, branchPrefix: "refrendo", commit: false });
     expect(outcome.code).toBe(0);
     expect(outcome.commit).toBeNull();
     expect(await currentBranch(repo)).toBe("main");
   });
 
   it("no revienta fuera de un repositorio Git", async () => {
-    const plain = await fs.mkdtemp(path.join(os.tmpdir(), "forge-plain-"));
+    const plain = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-plain-"));
     try {
-      const outcome = await finishCi(result(), { cwd: plain, branchPrefix: "forge", commit: true });
+      const outcome = await finishCi(result(), { cwd: plain, branchPrefix: "refrendo", commit: true });
       expect(outcome.code).toBe(0);
       expect(outcome.reason).toContain("no es un repositorio Git");
     } finally {
@@ -207,7 +207,7 @@ describe("cierre de CI — solo se comitea lo verificado", () => {
 
   it("publica las variables que consume el resto del workflow", async () => {
     await fs.writeFile(path.join(repo, "src.ts"), "cambio\n");
-    await finishCi(result(), { cwd: repo, branchPrefix: "forge", commit: true });
+    await finishCi(result(), { cwd: repo, branchPrefix: "refrendo", commit: true });
 
     const outputs = await readOutputs();
     expect(outputs["status"]).toBe("verified");
@@ -215,7 +215,7 @@ describe("cierre de CI — solo se comitea lo verificado", () => {
     expect(outputs["cost-usd"]).toBe("0.4100");
     expect(outputs["files-changed"]).toBe("1");
     expect(outputs["repair-attempts"]).toBe("1");
-    expect(outputs["branch"]).toMatch(/^forge\//);
+    expect(outputs["branch"]).toMatch(/^refrendo\//);
     expect(outputs["sha"]).toMatch(/^[0-9a-f]{40}$/);
   });
 
@@ -223,7 +223,7 @@ describe("cierre de CI — solo se comitea lo verificado", () => {
     await fs.writeFile(path.join(repo, "src.ts"), "cambio\n");
     await finishCi(result({ summary: "linea uno\nlinea dos" }), {
       cwd: repo,
-      branchPrefix: "forge",
+      branchPrefix: "refrendo",
       commit: true,
     });
 
@@ -236,11 +236,11 @@ describe("cierre de CI — solo se comitea lo verificado", () => {
 
 describe("mensaje de commit", () => {
   it("registra la procedencia: objetivo, puertas y traza", () => {
-    const message = commitMessage(result(), "https://forge.local/r/abc");
+    const message = commitMessage(result(), "https://refrendo.local/r/abc");
     expect(message.startsWith("Añadir paginación al endpoint")).toBe(true);
     expect(message).toContain("Verificado con: test (npm test)");
     expect(message).toContain("Ciclos de reparacion: 1");
-    expect(message).toContain("https://forge.local/r/abc");
+    expect(message).toContain("https://refrendo.local/r/abc");
   });
 
   it("no inventa una traza que no existe", () => {

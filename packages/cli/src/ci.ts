@@ -1,5 +1,5 @@
 import { promises as fs } from "node:fs";
-import { renderMarkdownReport, type RunResult } from "@forge/core";
+import { renderMarkdownReport, type RunResult } from "@refrendo/core";
 import { branchNameFor, commitOnNewBranch, isGitRepo, type CommitResult } from "./git.js";
 
 export interface CiOptions {
@@ -26,7 +26,7 @@ export interface CiOutcome {
  *
  * Toda la logica cabe en una frase: **solo se comitea lo verificado**. Un run
  * revertido, agotado o sin puertas no genera rama, no genera PR y sale con
- * codigo distinto de cero. Es lo que convierte a Forge en algo que se puede
+ * codigo distinto de cero. Es lo que convierte a Refrendo en algo que se puede
  * dejar corriendo sin vigilancia — el pipeline no propaga nada que no tenga
  * evidencia detras.
  */
@@ -84,7 +84,7 @@ export function commitMessage(result: RunResult, runUrl?: string): string {
   }
   if (runUrl) lines.push(`Traza: ${runUrl}`);
 
-  lines.push("", "Generado por Forge — agente de trabajo verificado.");
+  lines.push("", "Generado por Refrendo — agente de trabajo verificado.");
   return lines.join("\n");
 }
 

@@ -28,7 +28,7 @@ export interface ShareToken {
  * mejor que un secreto fijo escrito en el codigo.
  */
 export function shareSecret(serverToken: string | undefined): Buffer {
-  if (serverToken) return createHmac("sha256", "forge-share-v1").update(serverToken).digest();
+  if (serverToken) return createHmac("sha256", "refrendo-share-v1").update(serverToken).digest();
   return randomBytes(32);
 }
 

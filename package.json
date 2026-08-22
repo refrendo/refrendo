@@ -1,5 +1,5 @@
 {
-  "name": "forge",
+  "name": "refrendo",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,8 +11,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "forge": "tsx packages/cli/src/index.ts",
-    "build": "npm run build -w @forge/core && npm run build -w @forge/server && npm run build -w @forge/cli",
+    "refrendo": "tsx packages/cli/src/index.ts",
+    "build": "npm run build -w @refrendo/core && npm run build -w @refrendo/server && npm run build -w @refrendo/cli",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -26,12 +26,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TU-USUARIO/forge.git"
+    "url": "git+https://github.com/TU-USUARIO/refrendo.git"
   },
   "bugs": {
-    "url": "https://github.com/TU-USUARIO/forge/issues"
+    "url": "https://github.com/TU-USUARIO/refrendo/issues"
   },
-  "homepage": "https://github.com/TU-USUARIO/forge",
+  "homepage": "https://github.com/TU-USUARIO/refrendo",
   "publishConfig": {
     "access": "public"
   }

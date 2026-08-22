@@ -1,4 +1,4 @@
-import type { ForgeEvent, GateResult, RunResult } from "@forge/core";
+import type { RefrendoEvent, GateResult, RunResult } from "@refrendo/core";
 import {
   Raw,
   formatCost,
@@ -108,7 +108,7 @@ function gatesSection(result: RunResult | null, events: StoredEvent[]): Raw {
     result?.verification?.gates ??
     events
       .map((entry) => entry.event)
-      .filter((event): event is Extract<ForgeEvent, { type: "gate_completed" }> => event.type === "gate_completed")
+      .filter((event): event is Extract<RefrendoEvent, { type: "gate_completed" }> => event.type === "gate_completed")
       .map((event) => event.gate);
 
   if (gates.length === 0) {
@@ -334,13 +334,13 @@ function describeInput(input: unknown): string {
   return "";
 }
 
-function lastOfType<T extends ForgeEvent["type"]>(
+function lastOfType<T extends RefrendoEvent["type"]>(
   events: StoredEvent[],
   type: T,
-): Extract<ForgeEvent, { type: T }> | null {
+): Extract<RefrendoEvent, { type: T }> | null {
   for (let i = events.length - 1; i >= 0; i--) {
     const event = events[i]!.event;
-    if (event.type === type) return event as Extract<ForgeEvent, { type: T }>;
+    if (event.type === type) return event as Extract<RefrendoEvent, { type: T }>;
   }
   return null;
 }
@@ -362,7 +362,7 @@ function liveScript(runId: string): Raw {
   var trace = document.getElementById("trace");
   if (!trace) return;
   var source = new EventSource("/api/runs/${runId}/stream");
-  source.addEventListener("forge", function (message) {
+  source.addEventListener("refrendo", function (message) {
     var payload = JSON.parse(message.data);
     if (payload.html) {
       var empty = trace.querySelector(".empty");

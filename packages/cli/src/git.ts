@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 /**
  * Operaciones de Git para el modo CI.
  *
- * Aqui hay una linea deliberada: Forge crea la rama y el commit, pero **no
+ * Aqui hay una linea deliberada: Refrendo crea la rama y el commit, pero **no
  * publica**. `git push` sigue en la denylist dura del agente, y la publicacion
  * se deja como un paso explicito del workflow, con las credenciales del propio
  * pipeline. Asi cualquiera que lea el fichero del workflow ve exactamente donde
@@ -105,7 +105,7 @@ export async function headSha(cwd: string): Promise<string> {
  * El sufijo es aleatorio y no una marca de tiempo: dos runs lanzados en el
  * mismo milisegundo —lo normal en una matriz de CI— chocarian con un reloj.
  */
-export function branchNameFor(goal: string, prefix = "forge"): string {
+export function branchNameFor(goal: string, prefix = "refrendo"): string {
   const slug = goal
     .normalize("NFD")
     // Marcas diacriticas combinantes: "añadir" -> "anadir", "límite" -> "limite".
@@ -135,7 +135,7 @@ export interface CommitResult {
 /**
  * Crea la rama, anade todo lo modificado y comitea.
  *
- * La autoria queda a nombre de quien lanzo el run, no de "Forge": el
+ * La autoria queda a nombre de quien lanzo el run, no de "Refrendo": el
  * responsable de un cambio es una persona, y el historial tiene que reflejarlo
  * aunque lo haya tecleado un agente. La procedencia se registra en el pie del
  * mensaje, no falseando el autor.

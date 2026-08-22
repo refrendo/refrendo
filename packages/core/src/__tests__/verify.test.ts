@@ -17,7 +17,7 @@ let root: string;
 let workspace: Workspace;
 
 beforeEach(async () => {
-  root = await fs.mkdtemp(path.join(os.tmpdir(), "forge-verify-"));
+  root = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-verify-"));
   workspace = new Workspace(root);
 });
 

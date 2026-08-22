@@ -15,8 +15,8 @@ const src = (pkg: string) =>
 export default defineConfig({
   resolve: {
     alias: {
-      "@forge/core": src("core"),
-      "@forge/server": src("server"),
+      "@refrendo/core": src("core"),
+      "@refrendo/server": src("server"),
     },
   },
 });

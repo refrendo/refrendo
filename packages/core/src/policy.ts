@@ -34,11 +34,6 @@ export interface PolicyConfig {
 }
 
 /**
- * Comandos destructivos o de efecto externo. Se bloquean siempre, incluso con
- * `--yes`: son irreversibles o publican fuera de la maquina, y ninguna de las
- * dos cosas es decision de un agente.
- */
-/**
  * Inicio de comando: principio de la cadena, o detras de una tuberia, un punto
  * y coma o un operador de encadenamiento.
  *
@@ -50,6 +45,11 @@ export interface PolicyConfig {
  */
 const CMD = String.raw`(?:^|[|;&]\s*)`;
 
+/**
+ * Comandos destructivos o de efecto externo. Se bloquean siempre, incluso con
+ * `--yes`: son irreversibles o publican fuera de la maquina, y ninguna de las
+ * dos cosas es decision de un agente.
+ */
 export const HARD_DENY: RegExp[] = [
   /\brm\s+(-[a-zA-Z]*\s+)*-[a-zA-Z]*[rf]/, // rm -rf y variantes
   /\bgit\s+push\b/,
@@ -79,7 +79,7 @@ export const HARD_DENY: RegExp[] = [
 export const DEFAULT_PROTECTED_PATHS = [
   ".github/workflows/**",
   ".github/actions/**",
-  "forge.config.json",
+  "refrendo.config.json",
   "action.yml",
   ".git/**",
 ];

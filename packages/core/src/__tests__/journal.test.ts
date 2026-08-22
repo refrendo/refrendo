@@ -10,7 +10,7 @@ let workspace: Workspace;
 let journal: ChangeJournal;
 
 beforeEach(async () => {
-  root = await fs.mkdtemp(path.join(os.tmpdir(), "forge-journal-"));
+  root = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-journal-"));
   workspace = new Workspace(root);
   journal = new ChangeJournal(workspace);
 });

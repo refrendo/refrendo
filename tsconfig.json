@@ -21,10 +21,10 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@forge/core": [
+      "@refrendo/core": [
         "./packages/core/src/index.ts"
       ],
-      "@forge/server": [
+      "@refrendo/server": [
         "./packages/server/src/index.ts"
       ]
     }

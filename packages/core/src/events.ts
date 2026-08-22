@@ -5,7 +5,7 @@ import type { FileChange, GateResult, Plan, RunResult, TaskContract, UsageTotals
  * la CLI lo pinta, el futuro servidor lo reenvia por SSE y la sesion compartida
  * de equipo se reconstruye reproduciendolo. Por eso todo evento es serializable.
  */
-export type ForgeEvent =
+export type RefrendoEvent =
   | { type: "run_started"; contract: TaskContract; workspace: string; at: string }
   | { type: "phase_started"; phase: Phase }
   | { type: "plan_ready"; plan: Plan }
@@ -28,14 +28,14 @@ export type ForgeEvent =
 
 export type Phase = "plan" | "execute" | "verify" | "repair" | "finalize";
 
-export type EmitFn = (event: ForgeEvent) => void;
+export type EmitFn = (event: RefrendoEvent) => void;
 
-export type Listener = (event: ForgeEvent) => void;
+export type Listener = (event: RefrendoEvent) => void;
 
 /** Bus sincrono minimo. Un listener que lanza no puede tumbar la ejecucion. */
 export class EventBus {
   private readonly listeners = new Set<Listener>();
-  private readonly history: ForgeEvent[] = [];
+  private readonly history: RefrendoEvent[] = [];
 
   on(listener: Listener): () => void {
     this.listeners.add(listener);
@@ -54,7 +54,7 @@ export class EventBus {
   };
 
   /** Traza completa del run, lista para persistir o reproducir. */
-  transcript(): readonly ForgeEvent[] {
+  transcript(): readonly RefrendoEvent[] {
     return this.history;
   }
 }

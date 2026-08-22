@@ -40,11 +40,11 @@ export function renderIndex(runs: RunRow[], summary: IndexSummary): string {
 <section>
   <h2>Runs recientes</h2>
   <div class="panel tscroll">
-    ${runs.length === 0 ? html`<div class="empty">Todavia no hay runs. Lanza uno con <code>forge run</code> o por la API.</div>` : runsTable(runs)}
+    ${runs.length === 0 ? html`<div class="empty">Todavia no hay runs. Lanza uno con <code>refrendo run</code> o por la API.</div>` : runsTable(runs)}
   </div>
 </section>`;
 
-  return page("Runs — Forge", body);
+  return page("Runs — Refrendo", body);
 }
 
 function runsTable(runs: RunRow[]) {

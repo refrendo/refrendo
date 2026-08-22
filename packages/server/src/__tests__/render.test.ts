@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RunResult } from "@forge/core";
+import type { RunResult } from "@refrendo/core";
 import { escapeHtml, html, join, raw } from "../html.js";
 import { renderRecord, verificationRounds } from "../render/record.js";
 import { renderIndex } from "../render/index-page.js";
