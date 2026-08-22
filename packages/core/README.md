@@ -8,6 +8,6 @@ Este paquete es una pieza interna de [`refrendo`](https://www.npmjs.com/package/
 npm install -g refrendo
 ```
 
-Documentación completa: https://github.com/TU-ORG/refrendo
+Documentación completa: https://github.com/refrendo/refrendo
 
 Apache-2.0

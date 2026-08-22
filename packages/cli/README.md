@@ -47,6 +47,6 @@ O un fichero `.env` en la raíz del proyecto. La clave se obtiene en [console.an
 
 `rm -rf`, `git push`, `npm publish`, `sudo` y `curl | sh` están bloqueados **siempre**. El agente no puede salir del repositorio ni escribir en tu pipeline de CI, y todo lo que toca se puede revertir entero.
 
-Documentación completa y arquitectura: https://github.com/TU-ORG/refrendo
+Documentación completa y arquitectura: https://github.com/refrendo/refrendo
 
 Apache-2.0
