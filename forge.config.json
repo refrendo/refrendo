@@ -1,0 +1,19 @@
+{
+  "model": "claude-opus-5",
+  "effort": "high",
+  "limits": {
+    "maxCostUsd": 2,
+    "maxIterations": 25,
+    "maxRepairAttempts": 3
+  },
+  "gates": [
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck"
+    },
+    {
+      "name": "test",
+      "command": "npm test"
+    }
+  ]
+}

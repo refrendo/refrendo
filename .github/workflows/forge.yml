@@ -1,0 +1,63 @@
+name: Forge
+
+# Dos disparadores, ambos con una persona detrás: nadie quiere un agente que se
+# despierte solo. El de issues exige la etiqueta `forge`, que es un acto
+# deliberado de alguien con permiso de escritura.
+on:
+  workflow_dispatch:
+    inputs:
+      goal:
+        description: "Qué tiene que conseguir el agente"
+        required: true
+        type: string
+      acceptance:
+        description: "Criterios de aceptación, uno por línea"
+        required: false
+        type: string
+      max-cost:
+        description: "Tope de gasto en dólares"
+        required: false
+        default: "2.00"
+        type: string
+  issues:
+    types: [labeled]
+
+jobs:
+  agente:
+    # En issues solo corre con la etiqueta `forge`.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.label.name == 'forge' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # crear la rama
+      pull-requests: write # abrir el PR
+      issues: write # comentar el resultado
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # El PR se abre contra la rama base, así que hace falta el historial.
+          fetch-depth: 0
+
+      - name: Ejecutar Forge
+        id: forge
+        uses: ./
+        with:
+          goal: ${{ inputs.goal || github.event.issue.title }}
+          acceptance: ${{ inputs.acceptance || '' }}
+          max-cost: ${{ inputs.max-cost || '2.00' }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      # `always()` a propósito: cuando el run se revierte, el paso anterior falla
+      # y ese es justo el caso en el que hay que avisar a quien lo pidió.
+      - name: Comentar el resultado en la issue
+        if: ${{ always() && github.event_name == 'issues' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ steps.forge.outputs.verified }}" = "true" ]; then
+            BODY="✅ Verificado — ${{ steps.forge.outputs.pr-url }}"
+          else
+            BODY="❌ El agente no consiguió dejar el proyecto en verde (estado: ${{ steps.forge.outputs.status || 'error' }}). Los cambios se revirtieron; no hay nada que revisar. Coste: \$${{ steps.forge.outputs.cost-usd || '0' }}."
+          fi
+          gh issue comment "${{ github.event.issue.number }}" --body "$BODY"

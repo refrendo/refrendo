@@ -1,0 +1,152 @@
+name: "Forge — agente de trabajo verificado"
+description: >-
+  Ejecuta un agente sobre el repositorio y abre un pull request SOLO si los
+  cambios pasan las puertas de calidad del propio proyecto. Si no lo consigue,
+  revierte y falla el job sin dejar nada detrás.
+author: "Forge"
+
+branding:
+  icon: check-circle
+  color: green
+
+inputs:
+  goal:
+    description: "Qué tiene que conseguir el agente."
+    required: true
+  acceptance:
+    description: "Criterios de aceptación, uno por línea."
+    required: false
+    default: ""
+  constraints:
+    description: "Restricciones duras, una por línea."
+    required: false
+    default: ""
+  anthropic-api-key:
+    description: "Clave de la API de Anthropic."
+    required: true
+  github-token:
+    description: "Token para publicar la rama y abrir el PR."
+    required: false
+    default: ${{ github.token }}
+  model:
+    description: "Modelo a usar."
+    required: false
+    default: "claude-opus-5"
+  effort:
+    description: "low | medium | high | xhigh | max"
+    required: false
+    default: "high"
+  max-cost:
+    description: "Tope de gasto del run, en dólares. El run para al alcanzarlo."
+    required: false
+    default: "2.00"
+  working-directory:
+    description: "Directorio del repositorio."
+    required: false
+    default: "."
+  branch-prefix:
+    description: "Prefijo de la rama que se crea."
+    required: false
+    default: "forge"
+  base:
+    description: "Rama base del pull request."
+    required: false
+    default: ${{ github.event.repository.default_branch }}
+  create-pr:
+    description: "Publicar la rama y abrir el pull request cuando el run queda verificado."
+    required: false
+    default: "true"
+  auto-approve:
+    description: >-
+      Preaprueba los comandos que no están en la allowlist. Déjalo en false salvo
+      que sepas exactamente qué necesita ejecutar el agente: los comandos
+      destructivos siguen bloqueados, pero esto abre el resto.
+    required: false
+    default: "false"
+
+outputs:
+  status:
+    description: "verified | unverified | reverted | exhausted | failed"
+    value: ${{ steps.forge.outputs.status }}
+  verified:
+    description: "true solo si las puertas del proyecto pasaron."
+    value: ${{ steps.forge.outputs.verified }}
+  cost-usd:
+    description: "Coste real del run."
+    value: ${{ steps.forge.outputs['cost-usd'] }}
+  files-changed:
+    description: "Número de ficheros modificados."
+    value: ${{ steps.forge.outputs['files-changed'] }}
+  branch:
+    description: "Rama creada, vacía si no se comiteó nada."
+    value: ${{ steps.forge.outputs.branch }}
+  pr-url:
+    description: "URL del pull request, vacía si no se abrió."
+    value: ${{ steps.pr.outputs.url }}
+
+runs:
+  using: composite
+  steps:
+    - name: Preparar Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: "24"
+
+    - name: Instalar Forge
+      shell: bash
+      run: npm ci --prefix "$GITHUB_ACTION_PATH"
+
+    - name: Ejecutar el agente
+      id: forge
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        FORGE_GOAL: ${{ inputs.goal }}
+        FORGE_ACCEPTANCE: ${{ inputs.acceptance }}
+        FORGE_CONSTRAINTS: ${{ inputs.constraints }}
+      run: |
+        set -euo pipefail
+
+        # Los criterios llegan como texto multilínea; cada línea es un --accept.
+        args=()
+        while IFS= read -r line; do
+          [ -n "$line" ] && args+=(--accept "$line")
+        done <<< "$FORGE_ACCEPTANCE"
+        while IFS= read -r line; do
+          [ -n "$line" ] && args+=(--constraint "$line")
+        done <<< "$FORGE_CONSTRAINTS"
+
+        [ "${{ inputs.auto-approve }}" = "true" ] && args+=(--yes)
+
+        # `ci` sale con 0 únicamente si el run queda verificado. No se usa
+        # `continue-on-error`: si no está verificado, el job debe fallar.
+        node --import tsx "$GITHUB_ACTION_PATH/packages/cli/src/index.ts" ci "$FORGE_GOAL" \
+          --model "${{ inputs.model }}" \
+          --effort "${{ inputs.effort }}" \
+          --max-cost "${{ inputs.max-cost }}" \
+          --branch-prefix "${{ inputs.branch-prefix }}" \
+          --report "$RUNNER_TEMP/forge-report.md" \
+          "${args[@]}"
+
+    # Aquí, y solo aquí, sale el código de la máquina. El agente nunca publica:
+    # `git push` está en su denylist dura. La publicación es un paso visible del
+    # workflow, con las credenciales del pipeline.
+    - name: Publicar la rama y abrir el pull request
+      id: pr
+      if: ${{ steps.forge.outputs.verified == 'true' && steps.forge.outputs.branch != '' && inputs.create-pr == 'true' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: |
+        set -euo pipefail
+        BRANCH="${{ steps.forge.outputs.branch }}"
+        git push origin "$BRANCH"
+        URL=$(gh pr create \
+          --base "${{ inputs.base }}" \
+          --head "$BRANCH" \
+          --title "${{ inputs.goal }}" \
+          --body-file "$RUNNER_TEMP/forge-report.md")
+        echo "url=$URL" >> "$GITHUB_OUTPUT"
+        echo "Pull request: $URL" >> "$GITHUB_STEP_SUMMARY"
