@@ -1,0 +1,73 @@
+name: CI
+
+# Las mismas puertas que Refrendo aplica a los demas, aplicadas a Refrendo.
+# Un proyecto que vende verificacion y no se verifica a si mismo no es creible.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Permite lanzarlo a mano para comprobar una rama concreta.
+  workflow_dispatch:
+
+# Solo lectura: este workflow comprueba, no publica.
+permissions:
+  contents: read
+
+concurrency:
+  # Una serie rapida de commits no deja media docena de ejecuciones corriendo.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  puertas:
+    name: Puertas de calidad
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      # `ci` y no `install`: instala exactamente lo que fija el lockfile y
+      # falla si el lockfile y el manifiesto se han desincronizado.
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Comprobar tipos
+        run: npm run typecheck
+
+      - name: Ejecutar tests
+        run: npm test
+
+      # Compilar es una puerta mas: el codigo puede pasar el typecheck y aun
+      # asi no emitir, y lo que se publica en npm es lo emitido.
+      - name: Compilar los paquetes
+        run: npm run build
+
+      # Lo que de verdad recibe un usuario es el tarball, no el repositorio.
+      # Esto habria detectado los rangos de dependencia invalidos antes de
+      # publicarlos, que es como se descubrieron.
+      - name: Comprobar el empaquetado
+        run: |
+          set -euo pipefail
+          for pkg in core server cli; do
+            ( cd "packages/$pkg" && npm pack --dry-run )
+          done
+
+  auditoria:
+    name: Vulnerabilidades
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      # Solo falla ante vulnerabilidades altas o criticas: un aviso menor en
+      # una dependencia de desarrollo no debe bloquear un pull request.
+      - name: Auditar dependencias
+        run: npm audit --audit-level=high

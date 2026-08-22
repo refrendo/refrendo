@@ -284,6 +284,20 @@
   .plan ul { margin: 0.4rem 0 0; padding-left: 1.05rem; font-size: 0.93rem; line-height: 1.5; }
   .plan li { margin-bottom: 0.45rem; }
 
+  /* ---------- empezar ---------- */
+  .cmds { display: grid; gap: 1.25rem; max-width: 46rem; }
+  .cmd-block { }
+  .cmd-block p { margin: 0 0 .5rem; font-size: .95rem; color: var(--muted); }
+  .cmd-block pre {
+    margin: 0; padding: .95rem 1.15rem;
+    background: var(--ink); color: var(--ground);
+    font-family: var(--data); font-size: .88rem; line-height: 1.5;
+    overflow-x: auto;
+  }
+  :root[data-theme="dark"] .cmd-block pre,
+  :root:not([data-theme="light"]) .cmd-block pre { background: var(--sunk); color: var(--ink); border: 1px solid var(--rule); }
+  .cmd-block pre .prompt { opacity: .5; user-select: none; }
+
   /* ---------- cierre ---------- */
   .close { text-align: left; padding: clamp(3rem, 8vw, 6rem) 0 clamp(4rem, 9vw, 7rem); }
   .close h2 { max-width: 20ch; }
@@ -302,12 +316,13 @@
 <div class="wrap">
 
   <nav class="bar">
-    <a class="brand" href="#">refrendo<i>.</i></a>
+    <a class="brand" href="/">refrendo<i>.</i></a>
     <div class="links">
       <a href="#problema">El problema</a>
       <a href="#como">Cómo funciona</a>
       <a href="#gobierno">Gobernanza</a>
       <a href="#precios">Precios</a>
+      <a href="#empezar">Empezar</a>
     </div>
   </nav>
 
@@ -320,8 +335,8 @@
         que pasa las puertas de calidad de tu propio proyecto — o no te entrega nada.
       </p>
       <div class="cta-row">
-        <a class="btn solid" href="#precios">Empezar gratis</a>
-        <a class="btn ghost" href="#como">Ver un run real</a>
+        <a class="btn solid" href="#empezar">Empezar gratis</a>
+        <a class="btn ghost" href="#como">Como funciona</a>
       </div>
     </div>
 
@@ -540,6 +555,45 @@
     </div>
   </section>
 
+  <section id="empezar">
+    <p class="eyebrow">Empezar</p>
+    <h2>Tres comandos y lo tienes funcionando</h2>
+    <p class="sub">
+      Codigo abierto bajo Apache-2.0. No hay que registrarse para usarlo: se
+      instala, se apunta a un repositorio con tests y ya.
+    </p>
+
+    <div class="cmds">
+      <div class="cmd-block">
+        <p><strong>1.</strong> Instalar</p>
+        <pre><span class="prompt">$ </span>npm install -g refrendo</pre>
+      </div>
+
+      <div class="cmd-block">
+        <p><strong>2.</strong> Ver que hace, sin clave de API ni conectar nada</p>
+        <pre><span class="prompt">$ </span>refrendo serve --demo</pre>
+      </div>
+
+      <div class="cmd-block">
+        <p><strong>3.</strong> Lanzarlo sobre un repositorio tuyo con tests</p>
+        <pre><span class="prompt">$ </span>refrendo run "anade paginacion al endpoint de usuarios"     --accept "el endpoint acepta ?page y ?limit"     --max-cost 0.50</pre>
+      </div>
+
+      <div class="cmd-block">
+        <p><strong>En integracion continua</strong> — abre el pull request solo si las puertas pasan</p>
+        <pre>- uses: refrendo/refrendo@v0.0.1
+  with:
+    goal: ${{ github.event.issue.title }}
+    anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}</pre>
+      </div>
+    </div>
+
+    <p class="sub" style="margin-top:2rem">
+      Necesitas una clave de la API de Anthropic, que se factura aparte. Un cambio
+      pequeno verificado cuesta unos 0,25 $ en tokens.
+    </p>
+  </section>
+
   <section class="close">
     <p class="eyebrow">Empezar</p>
     <h2>Pruébalo contra un repositorio tuyo esta tarde</h2>
@@ -549,8 +603,8 @@
       request que ya pasa tu CI.
     </p>
     <div class="cta-row">
-      <a class="btn solid" href="#">Empezar gratis</a>
-      <a class="btn ghost" href="#">Hablar con nosotros</a>
+      <a class="btn solid" href="#empezar">Empezar gratis</a>
+      <a class="btn ghost" href="https://github.com/refrendo/refrendo">Ver el codigo</a>
     </div>
   </section>
 
