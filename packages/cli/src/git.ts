@@ -46,6 +46,15 @@ function spawnGit(cwd: string, args: string[], stdin?: string): Promise<GitResul
     let stdout = "";
     let stderr = "";
 
+    // Si git termina antes de leer lo que le escribimos, el sistema cierra la
+    // tuberia y Node emite EPIPE en el flujo. Sin este manejador la excepcion
+    // queda sin capturar y tumba el proceso entero — de forma intermitente,
+    // porque depende de quien gane la carrera. Se registra en stderr en vez de
+    // silenciarse: un fallo de escritura legitimo tambien pasa por aqui.
+    child.stdin.on("error", (error: Error) => {
+      stderr += `\n[stdin] ${error.message}`;
+    });
+
     // Un git que espera entrada que no llega se queda colgado hasta el timeout,
     // y el sintoma no se parece en nada a la causa.
     child.stdin.end(stdin ?? "");

@@ -36,6 +36,12 @@ export function runCommand(
       env: { ...process.env, CI: "1", FORCE_COLOR: "0", NO_COLOR: "1" },
     });
 
+    // Mismo motivo que en la capa de git: si el proceso termina antes de leer
+    // su entrada, Node emite EPIPE aqui y sin manejador tumba el proceso.
+    child.stdin?.on("error", (error: Error) => {
+      stderr += `\n[stdin] ${error.message}`;
+    });
+
     // Pasar texto por stdin evita tener que escaparlo para el shell. Se cierra
     // siempre: un proceso que espera entrada que no llega se cuelga hasta el
     // timeout, y el sintoma no se parece en nada a la causa.
