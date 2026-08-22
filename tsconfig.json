@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES2023",
-    "lib": ["ES2023"],
+    "lib": [
+      "ES2023"
+    ],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
@@ -14,7 +16,20 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@forge/core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@forge/server": [
+        "./packages/server/src/index.ts"
+      ]
+    }
   },
-  "include": ["packages/*/src/**/*.ts"]
+  "include": [
+    "packages/*/src/**/*.ts"
+  ]
 }

@@ -8,6 +8,7 @@ export * from "./api.js";
 export * from "./runner.js";
 export * from "./store.js";
 export { seedDemoRun } from "./demo.js";
+export { recordRun, type Recording } from "./record.js";
 export { renderRecord } from "./render/record.js";
 export { renderIndex } from "./render/index-page.js";
 export { escapeHtml, html, raw } from "./html.js";

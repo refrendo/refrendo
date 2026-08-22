@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
+import { MissingCredentials } from "../errors.js";
 import type { ToolDefinition } from "../types.js";
 
 export type Effort = "low" | "medium" | "high" | "xhigh" | "max";
@@ -91,6 +92,9 @@ export class AnthropicProvider {
     try {
       return await this.stream(request, this.features);
     } catch (error) {
+      if (isCredentialProblem(error)) {
+        throw new MissingCredentials(error instanceof Error ? error.message : String(error));
+      }
       if (!this.canDegrade(error)) throw error;
 
       this.degraded = true;
@@ -151,6 +155,18 @@ export class AnthropicProvider {
 
     return stream.finalMessage();
   }
+}
+
+/**
+ * Distingue "no tienes credenciales" de "tus credenciales no valen".
+ *
+ * Lo primero lo lanza el SDK antes de salir a la red y no es un error HTTP; lo
+ * segundo es un 401. Los dos merecen las mismas instrucciones.
+ */
+function isCredentialProblem(error: unknown): boolean {
+  if (error instanceof Anthropic.AuthenticationError) return true;
+  if (!(error instanceof Error)) return false;
+  return /could not resolve authentication|apiKey|authToken|x-api-key/i.test(error.message);
 }
 
 /**

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { createInterface } from "node:readline/promises";
+import os from "node:os";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import {
@@ -44,6 +45,7 @@ Opciones
       --branch-prefix <p>   Prefijo de rama en 'ci' (por defecto: forge)
       --no-commit           En 'ci', no crear rama ni commit
       --report <fichero>    Escribe el informe en Markdown
+      --no-record           No guardar el run en el historial local
       --run-url <url>       Enlace a la pagina del run, para el informe
   -y, --yes                 Aprueba automaticamente los comandos no destructivos
       --no-verify           Salta las puertas de verificacion
@@ -78,6 +80,7 @@ async function main(argv: string[]): Promise<number> {
       report: { type: "string" },
       actor: { type: "string" },
       "actor-email": { type: "string" },
+      "no-record": { type: "boolean" },
       root: { type: "string", multiple: true },
       yes: { type: "boolean", short: "y" },
       "no-verify": { type: "boolean" },
@@ -193,6 +196,8 @@ async function main(argv: string[]): Promise<number> {
         }),
       );
 
+      let lastResult: import("@forge/core").RunResult | null = null;
+
       const agent = new ForgeAgent({
         workspace,
         provider: {
@@ -213,12 +218,48 @@ async function main(argv: string[]): Promise<number> {
         rollbackOnFailure: values.keep !== true,
       });
 
+      // El recibo no depende de por donde entraste: un run de terminal se
+      // graba igual que uno lanzado por la API.
+      let receiptUrl = "";
+      let closeStore: (() => void) | null = null;
+      if (values["no-record"] !== true) {
+        try {
+          const { RunStore, recordRun } = await import("@forge/server");
+          const store = await RunStore.open(path.join(root, ".forge", "runs.db"));
+          const recording = recordRun(store, {
+            contract,
+            workspace: root,
+            repo: path.basename(root),
+            actor: process.env["GITHUB_ACTOR"] ?? values.actor ?? os.userInfo().username,
+            model: values.model ?? config.model,
+          });
+          bus.on(recording.listener);
+          receiptUrl = `/r/${recording.id}`;
+          closeStore = () => {
+            recording.finish(lastResult!);
+            store.close();
+          };
+        } catch (error) {
+          process.stderr.write(
+            `${c.yellow("aviso:")} no se pudo abrir el historial local; el run no dejara recibo. ${error instanceof Error ? error.message : String(error)}\n`,
+          );
+        }
+      }
+
       const result = await agent.run(contract);
+      lastResult = result;
+      closeStore?.();
 
       if (values.json) {
         process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
       } else {
         process.stdout.write(`${renderResult(result)}\n`);
+      }
+
+      if (receiptUrl && !values.json) {
+        process.stdout.write(
+          `${c.dim("recibo")} ${c.cyan(receiptUrl)} ${c.dim("— arranca `forge serve` para abrirlo")}\n`,
+        );
       }
 
       if (command === "ci") {

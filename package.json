@@ -4,10 +4,15 @@
   "private": true,
   "type": "module",
   "description": "Agente de trabajo verificado: convierte objetivos en cambios de codigo demostrablemente correctos.",
-  "workspaces": ["packages/*"],
-  "engines": { "node": ">=22" },
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "forge": "tsx packages/cli/src/index.ts",
+    "build": "npm run build -w @forge/core && npm run build -w @forge/server && npm run build -w @forge/cli",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -17,5 +22,17 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^3.2.4"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TU-USUARIO/forge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TU-USUARIO/forge/issues"
+  },
+  "homepage": "https://github.com/TU-USUARIO/forge",
+  "publishConfig": {
+    "access": "public"
   }
 }

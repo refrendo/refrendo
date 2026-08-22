@@ -1,13 +1,36 @@
 {
   "name": "@forge/cli",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "type": "module",
   "bin": {
-    "forge": "./src/index.ts"
+    "forge": "./dist/index.js"
   },
   "dependencies": {
     "@forge/core": "*",
     "@forge/server": "*"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TU-USUARIO/forge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TU-USUARIO/forge/issues"
+  },
+  "homepage": "https://github.com/TU-USUARIO/forge",
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "CLI del agente de trabajo verificado.",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
   }
 }

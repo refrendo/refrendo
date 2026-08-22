@@ -4,6 +4,7 @@ export { CONFIG_FILENAME, DEFAULT_CONFIG, loadConfig, type ForgeConfig } from ".
 export {
   BudgetExceeded,
   ForgeError,
+  MissingCredentials,
   PolicyDenied,
   SandboxViolation,
   ToolInvocationError,
