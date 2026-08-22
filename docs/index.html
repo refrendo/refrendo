@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Refrendo no conversa sobre tu codigo: lo cambia, y despues demuestra que sigue funcionando. Si no consigue dejar tu proyecto en verde, revierte todo.">
+<meta name="theme-color" content="#0B6360">
+<link rel="canonical" href="https://refrendo.dev/">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://refrendo.dev/">
+<meta property="og:title" content="Refrendo - agente de trabajo verificado">
+<meta property="og:description" content="Tu agente dice que ha terminado. Esto lo demuestra. Los cambios pasan las puertas de calidad de tu propio proyecto, o se revierten enteros.">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Refrendo - agente de trabajo verificado">
+<meta name="twitter:description" content="Tu agente dice que ha terminado. Esto lo demuestra.">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#129534;</text></svg>">
+<title>Refrendo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --ground: #EFF3F4;
+    --paper: #FFFFFF;
+    --sunk: #E2EAEB;
+    --ink: #0D1417;
+    --muted: #556A73;
+    --rule: #C9D6DA;
+    --accent: #0B6360;
+    --accent-soft: #D6E9E7;
+    --pass: #1A6B42;
+    --pass-soft: #D8EDE1;
+    --fail: #A03428;
+    --fail-soft: #F6DEDA;
+
+    --display: "IBM Plex Sans Condensed", "Helvetica Neue", Arial, sans-serif;
+    --body: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+    --data: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #080D0F;
+      --paper: #101719;
+      --sunk: #0C1214;
+      --ink: #E3ECEE;
+      --muted: #8CA1A9;
+      --rule: #212E33;
+      --accent: #40B3A9;
+      --accent-soft: #122C2B;
+      --pass: #4FBC84;
+      --pass-soft: #10261C;
+      --fail: #E37F71;
+      --fail-soft: #291411;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #080D0F;
+    --paper: #101719;
+    --sunk: #0C1214;
+    --ink: #E3ECEE;
+    --muted: #8CA1A9;
+    --rule: #212E33;
+    --accent: #40B3A9;
+    --accent-soft: #122C2B;
+    --pass: #4FBC84;
+    --pass-soft: #10261C;
+    --fail: #E37F71;
+    --fail-soft: #291411;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 74rem; margin: 0 auto; padding: 0 clamp(1.15rem, 4vw, 3rem); }
+
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  .eyebrow {
+    font-family: var(--data);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 1rem;
+  }
+
+  /* ---------- nav ---------- */
+  nav.bar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap; padding: 1.5rem 0;
+  }
+  .brand {
+    font-family: var(--display); font-weight: 700; font-size: 1.35rem;
+    letter-spacing: -0.015em; text-decoration: none; color: var(--ink);
+  }
+  .brand i { font-style: normal; color: var(--accent); }
+  nav.bar .links { display: flex; gap: 1.5rem; font-family: var(--data); font-size: 0.78rem; }
+  nav.bar .links a { text-decoration: none; color: var(--muted); }
+  nav.bar .links a:hover { color: var(--accent); }
+
+  /* ---------- hero ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: center;
+    padding: clamp(2.5rem, 7vw, 6rem) 0 clamp(3rem, 8vw, 6rem);
+  }
+  @media (max-width: 60rem) { .hero { grid-template-columns: 1fr; } }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(2.4rem, 6.2vw, 4.3rem);
+    line-height: 0.99;
+    letter-spacing: -0.025em;
+    margin: 0 0 1.35rem;
+    text-wrap: balance;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .lede { font-size: clamp(1.05rem, 2vw, 1.22rem); color: var(--muted); margin: 0 0 2rem; max-width: 34ch; }
+
+  .cta-row { display: flex; gap: 0.85rem; flex-wrap: wrap; align-items: center; }
+  .btn {
+    display: inline-block;
+    font-family: var(--data); font-size: 0.82rem; font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 0.85rem 1.4rem; text-decoration: none;
+    border: 1px solid var(--accent);
+  }
+  .btn.solid { background: var(--accent); color: var(--paper); }
+  .btn.ghost { color: var(--accent); }
+  :root[data-theme="dark"] .btn.solid, :root:not([data-theme="light"]) .btn.solid { color: var(--ground); }
+
+  /* ---------- el recibo ---------- */
+  .receipt {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    box-shadow: 0 1px 0 var(--rule), 0 18px 40px -28px rgba(0,0,0,0.45);
+    position: relative;
+    font-size: 0.9rem;
+  }
+  .receipt-head { padding: 1.15rem 1.25rem 0.9rem; border-bottom: 1px solid var(--rule); }
+  .receipt-goal { font-family: var(--display); font-weight: 600; font-size: 1.12rem; margin: 0 0 0.3rem; }
+  .receipt-meta { font-family: var(--data); font-size: 0.7rem; color: var(--muted); margin: 0; }
+
+  /* El sello: el único gesto decorativo de la página, y es el argumento. */
+  .stamp {
+    position: absolute; top: -0.85rem; right: 1.1rem;
+    font-family: var(--data); font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--pass); background: var(--pass-soft);
+    border: 2px solid var(--pass); padding: 0.4rem 0.8rem;
+    transform: rotate(-3deg);
+  }
+
+  .receipt-row {
+    display: flex; align-items: center; gap: 0.7rem;
+    padding: 0.6rem 1.25rem; border-bottom: 1px solid var(--rule);
+    font-family: var(--data); font-size: 0.78rem;
+  }
+  .receipt-row:last-child { border-bottom: none; }
+  .ok { color: var(--pass); font-weight: 600; }
+  .ko { color: var(--fail); font-weight: 600; }
+  .cmd { color: var(--muted); }
+  .right { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .receipt-fail {
+    background: var(--fail-soft); color: var(--fail);
+    font-family: var(--data); font-size: 0.72rem; line-height: 1.5;
+    padding: 0.7rem 1.25rem; border-bottom: 1px solid var(--rule);
+    white-space: pre-wrap; overflow-x: auto;
+  }
+  .receipt-note {
+    padding: 0.7rem 1.25rem; font-size: 0.8rem; color: var(--muted);
+    border-bottom: 1px solid var(--rule); background: var(--sunk);
+  }
+  .receipt-foot {
+    padding: 0.75rem 1.25rem; font-family: var(--data); font-size: 0.7rem;
+    color: var(--muted); font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- secciones ---------- */
+  section { padding: clamp(3rem, 7vw, 5.5rem) 0; border-top: 1px solid var(--rule); }
+
+  h2 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(1.8rem, 4.2vw, 2.9rem);
+    line-height: 1.06; letter-spacing: -0.02em;
+    margin: 0 0 1rem; text-wrap: balance; max-width: 22ch;
+  }
+  .sub { color: var(--muted); max-width: 60ch; margin: 0 0 2.5rem; }
+
+  /* ---------- cifras ---------- */
+  .figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .figure { background: var(--paper); padding: 1.5rem 1.35rem; }
+  .figure .n {
+    font-family: var(--display); font-weight: 700; font-size: 3rem;
+    line-height: 0.92; letter-spacing: -0.03em; color: var(--accent);
+    font-variant-numeric: tabular-nums; display: block; margin-bottom: 0.6rem;
+  }
+  .figure p { margin: 0 0 0.6rem; font-size: 0.95rem; line-height: 1.45; }
+  .figure cite { font-family: var(--data); font-size: 0.66rem; color: var(--muted); font-style: normal; }
+
+  /* ---------- pasos ---------- */
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 2rem; }
+  .step h3 {
+    font-family: var(--display); font-weight: 600; font-size: 1.25rem;
+    margin: 0.8rem 0 0.5rem; letter-spacing: -0.01em;
+  }
+  .step p { margin: 0; color: var(--muted); font-size: 0.97rem; }
+  .step .k {
+    font-family: var(--data); font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent);
+    display: block; padding-bottom: 0.7rem; border-bottom: 2px solid var(--accent);
+  }
+
+  /* ---------- comparativa ---------- */
+  .versus { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .vs { background: var(--paper); padding: 1.6rem 1.4rem; }
+  .vs.mine { background: var(--accent-soft); }
+  .vs .who {
+    font-family: var(--data); font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    margin: 0 0 0.9rem;
+  }
+  .vs.mine .who { color: var(--accent); }
+  .vs .what { font-family: var(--display); font-weight: 600; font-size: 1.3rem; line-height: 1.2; margin: 0 0 0.7rem; }
+  .vs p { margin: 0; font-size: 0.94rem; color: var(--muted); }
+  .vs.mine p { color: var(--ink); }
+
+  /* ---------- garantía ---------- */
+  .promise {
+    background: var(--ink); color: var(--ground);
+    padding: clamp(2rem, 5vw, 3.5rem);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 2rem 3rem;
+    align-items: center;
+  }
+  :root[data-theme="dark"] .promise, :root:not([data-theme="light"]) .promise { background: var(--paper); color: var(--ink); border: 1px solid var(--rule); }
+  .promise q {
+    font-family: var(--display); font-weight: 600;
+    font-size: clamp(1.4rem, 3.2vw, 2rem); line-height: 1.22;
+    letter-spacing: -0.015em; quotes: "«" "»";
+  }
+  .promise p { margin: 0; opacity: 0.85; font-size: 0.97rem; }
+
+  /* ---------- gobernanza ---------- */
+  .gov { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1.75rem; }
+  .gov h3 { font-family: var(--display); font-weight: 600; font-size: 1.1rem; margin: 0 0 0.45rem; }
+  .gov p { margin: 0; font-size: 0.94rem; color: var(--muted); }
+  .gov code { font-family: var(--data); font-size: 0.82rem; background: var(--sunk); padding: 0.1rem 0.3rem; }
+
+  /* ---------- precios ---------- */
+  .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .plan { background: var(--paper); padding: 1.75rem 1.5rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .plan.mid { background: var(--accent-soft); }
+  .plan .name {
+    font-family: var(--data); font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0;
+  }
+  .plan .price {
+    font-family: var(--display); font-weight: 700; font-size: 2.3rem;
+    line-height: 1; letter-spacing: -0.025em; margin: 0; font-variant-numeric: tabular-nums;
+  }
+  .plan .price small { font-size: 0.8rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+  .plan ul { margin: 0.4rem 0 0; padding-left: 1.05rem; font-size: 0.93rem; line-height: 1.5; }
+  .plan li { margin-bottom: 0.45rem; }
+
+  /* ---------- cierre ---------- */
+  .close { text-align: left; padding: clamp(3rem, 8vw, 6rem) 0 clamp(4rem, 9vw, 7rem); }
+  .close h2 { max-width: 20ch; }
+
+  footer {
+    border-top: 1px solid var(--rule); padding: 2rem 0 3rem;
+    font-family: var(--data); font-size: 0.72rem; color: var(--muted);
+    display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="bar">
+    <a class="brand" href="#">refrendo<i>.</i></a>
+    <div class="links">
+      <a href="#problema">El problema</a>
+      <a href="#como">Cómo funciona</a>
+      <a href="#gobierno">Gobernanza</a>
+      <a href="#precios">Precios</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Agente de trabajo verificado</p>
+      <h1>Tu agente dice que ha terminado. <em>Esto lo demuestra.</em></h1>
+      <p class="lede">
+        Refrendo no te entrega una sugerencia para que la revises. Te entrega un cambio
+        que pasa las puertas de calidad de tu propio proyecto — o no te entrega nada.
+      </p>
+      <div class="cta-row">
+        <a class="btn solid" href="#precios">Empezar gratis</a>
+        <a class="btn ghost" href="#como">Ver un run real</a>
+      </div>
+    </div>
+
+    <div class="receipt">
+      <span class="stamp">Verificado</span>
+      <div class="receipt-head">
+        <p class="receipt-goal">Añadir paginación al endpoint GET /users</p>
+        <p class="receipt-meta">api · ana@equipo.dev · claude-opus-5</p>
+      </div>
+
+      <div class="receipt-row">
+        <span class="ok">✓</span> typecheck
+        <span class="cmd">npm run typecheck</span>
+        <span class="right">exit 0 · 3,5 s</span>
+      </div>
+      <div class="receipt-row">
+        <span class="ko">✗</span> test
+        <span class="cmd">npm test</span>
+        <span class="right">exit 1 · 4,1 s</span>
+      </div>
+      <pre class="receipt-fail">AssertionError: expected 500 to be 400
+  ❯ src/routes/users.test.ts:48:32</pre>
+      <p class="receipt-note">El agente corrigió el fallo y volvió a verificar.</p>
+      <div class="receipt-row">
+        <span class="ok">✓</span> test
+        <span class="cmd">npm test</span>
+        <span class="right">exit 0 · 4,0 s</span>
+      </div>
+      <div class="receipt-foot">2 ficheros · +58/−7 · $0,4127 · 78 s</div>
+    </div>
+  </header>
+
+  <section id="problema">
+    <p class="eyebrow">El problema</p>
+    <h2>El cuello de botella dejó de estar en escribir código</h2>
+    <p class="sub">
+      La IA ya escribe casi la mitad del código que se comitea. Nadie se fía de él, la
+      mitad ni se comprueba, y revisar lo que sí se comprueba cuesta más que antes. La
+      industria respondió a esa brecha con más herramientas para escribir.
+    </p>
+
+    <div class="figures">
+      <div class="figure">
+        <span class="n">96 %</span>
+        <p>de los desarrolladores no confía plenamente en que el código de IA sea funcionalmente correcto.</p>
+        <cite>Sonar · 1.100+ desarrolladores · ene 2026</cite>
+      </div>
+      <div class="figure">
+        <span class="n">48 %</span>
+        <p>lo comprueba siempre antes de comitear. El resto lo envía sin verificar.</p>
+        <cite>Sonar · ene 2026</cite>
+      </div>
+      <div class="figure">
+        <span class="n">81 %</span>
+        <p>dedica más tiempo a revisar desde que su equipo adoptó IA. La productividad se movió, no apareció.</p>
+        <cite>Harness · State of Engineering Excellence 2026</cite>
+      </div>
+    </div>
+  </section>
+
+  <section id="como">
+    <p class="eyebrow">Cómo funciona</p>
+    <h2>Tres fases. La tercera es la que nadie más hace.</h2>
+    <p class="sub">
+      No hay que cambiar de editor, ni de flujo, ni de proveedor. Refrendo se ejecuta donde
+      ya tienes el código y usa las comprobaciones que ya tienes escritas.
+    </p>
+
+    <div class="steps">
+      <div class="step">
+        <span class="k">01 · Contrato</span>
+        <h3>Un objetivo, no una conversación</h3>
+        <p>
+          Le das qué quieres conseguir y los criterios que debe cumplir. El agente
+          inspecciona el repositorio real y devuelve un plan con ficheros que ha visto,
+          no con rutas inventadas.
+        </p>
+      </div>
+      <div class="step">
+        <span class="k">02 · Ejecución gobernada</span>
+        <h3>Con las manos atadas a propósito</h3>
+        <p>
+          Escribe, ejecuta tus tests y se corrige sobre la marcha. No puede salir del
+          repositorio, no puede publicar nada fuera, y cada fichero que toca queda
+          registrado para poder deshacerlo entero.
+        </p>
+      </div>
+      <div class="step">
+        <span class="k">03 · Veredicto</span>
+        <h3>Lo demuestra o lo deshace</h3>
+        <p>
+          Se ejecutan las puertas de tu proyecto. Si fallan, el agente recibe el error
+          literal y lo arregla. Si tras varios intentos no llega a verde, revierte
+          <strong>todo</strong> y te dice por qué. Nunca queda deuda que limpiar.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Por qué es distinto</p>
+    <h2>Una opinión no es una prueba</h2>
+    <p class="sub">
+      El mercado se divide en herramientas que escriben más código y herramientas que
+      opinan sobre él. Las dos aumentan la pila de cosas por revisar.
+    </p>
+
+    <div class="versus">
+      <div class="vs">
+        <p class="who">Asistentes de código</p>
+        <p class="what">Producen más para revisar</p>
+        <p>Escriben rápido y bien. Pero cada línea que generan entra en la cola de revisión de alguien, y nada garantiza que funcione.</p>
+      </div>
+      <div class="vs">
+        <p class="who">Revisores con IA</p>
+        <p class="what">Añaden comentarios a la cola</p>
+        <p>Señalan problemas posibles sobre un cambio ya escrito. No ejecutan nada, así que no pueden afirmar que algo funcione — solo sugerirlo.</p>
+      </div>
+      <div class="vs mine">
+        <p class="who">Refrendo</p>
+        <p class="what">Quita trabajo de la cola</p>
+        <p>Lo que llega a revisión ya compila y pasa los tests. El revisor deja de preguntarse «¿esto funciona?» y se ocupa de lo que sí requiere criterio humano: si era la solución correcta.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="promise">
+      <q>Pagas por los cambios que pasan tus propios tests. Si el agente no lo consigue, revierte solo y no te cobramos.</q>
+      <p>
+        El criterio de éxito no lo pone Refrendo: lo pone tu suite de tests, la misma que ya
+        usas en tu CI. Por eso podemos cobrar por resultado sin pedirte que te fíes de
+        nuestra definición de resultado. Es la única garantía de esta categoría que el
+        cliente puede auditar por su cuenta.
+      </p>
+    </div>
+  </section>
+
+  <section id="gobierno">
+    <p class="eyebrow">Gobernanza</p>
+    <h2>Para cuando alguien tenga que responder por ese cambio</h2>
+    <p class="sub">
+      Si trabajas en un sector regulado, la pregunta llega tarde o temprano: qué agente
+      cambió esto, con qué autorización, y qué demostró que era seguro. Refrendo la contesta
+      con un enlace.
+    </p>
+
+    <div class="gov">
+      <div>
+        <h3>Traza completa y reproducible</h3>
+        <p>Cada run guarda plan, herramientas ejecutadas, aprobaciones, salida real de cada puerta, coste y veredicto. Compartible con un enlace firmado que caduca y abre solo ese run.</p>
+      </div>
+      <div>
+        <h3>Rutas que no puede tocar</h3>
+        <p><code>protectedPaths</code> bloquea la escritura en tu pipeline de CI, tu infraestructura o lo que decidas. Pedírselo en un prompt es una petición; esto es un cerrojo.</p>
+      </div>
+      <div>
+        <h3>Puertas obligatorias</h3>
+        <p><code>requiredGates</code> impide que un run se dé por verificado si falta una comprobación. Si desaparece tu suite de tests, eso es un fallo — no un silencio.</p>
+      </div>
+      <div>
+        <h3>Presupuesto por run</h3>
+        <p>Tope de gasto comprobado antes de cada petición al modelo. El coste real se contabiliza por run, por repositorio y por persona.</p>
+      </div>
+      <div>
+        <h3>Nada sale sin que se vea</h3>
+        <p>El agente no puede publicar: <code>git push</code>, <code>npm publish</code> y los comandos destructivos están bloqueados sin excepción. La publicación es un paso explícito de tu pipeline.</p>
+      </div>
+      <div>
+        <h3>Autoría honesta</h3>
+        <p>El commit va a nombre de quien lo pidió, con la procedencia en el pie del mensaje. El responsable de un cambio es una persona, aunque lo haya tecleado un agente.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="precios">
+    <p class="eyebrow">Precios</p>
+    <h2>Por repositorio gobernado, no por asiento</h2>
+    <p class="sub">
+      Los agentes reducen el número de personas necesarias para una tarea. Cobrarte por
+      asiento sería cobrarte por algo que nuestro propio producto encoge.
+    </p>
+
+    <div class="plans">
+      <div class="plan">
+        <p class="name">Solo</p>
+        <p class="price">0 <small>€</small></p>
+        <ul>
+          <li>CLI completa, código abierto</li>
+          <li>Runs locales sin límite</li>
+          <li>Verificación y reversión incluidas</li>
+          <li>Sin historial compartido</li>
+        </ul>
+      </div>
+      <div class="plan mid">
+        <p class="name">Team</p>
+        <p class="price">89 <small>€ / repo / mes</small></p>
+        <ul>
+          <li><strong>+ 1,20 € por run verificado</strong></li>
+          <li>Los revertidos no se facturan</li>
+          <li>Historial, trazas y enlaces compartibles</li>
+          <li>Política central y puertas obligatorias</li>
+          <li>Integración con CI y pull requests</li>
+        </ul>
+      </div>
+      <div class="plan">
+        <p class="name">Governed</p>
+        <p class="price">A medida</p>
+        <ul>
+          <li>Retención larga y exportación de auditoría</li>
+          <li>SSO y despliegue en tu infraestructura</li>
+          <li>Presupuesto por equipo y repositorio</li>
+          <li>Informe de procedencia por cambio</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="close">
+    <p class="eyebrow">Empezar</p>
+    <h2>Pruébalo contra un repositorio tuyo esta tarde</h2>
+    <p class="sub">
+      Instalas, apuntas a un repositorio con tests y le das un objetivo pequeño. En el
+      peor caso revierte y te ha costado unos céntimos. En el mejor, tienes un pull
+      request que ya pasa tu CI.
+    </p>
+    <div class="cta-row">
+      <a class="btn solid" href="#">Empezar gratis</a>
+      <a class="btn ghost" href="#">Hablar con nosotros</a>
+    </div>
+  </section>
+
+  <footer>
+    <span>Refrendo — agente de trabajo verificado</span>
+    <span>Cifras de mercado: Sonar, State of Code 2026 · Harness, 2026</span>
+  </footer>
+
+</div>
+
+</body>
+</html>
