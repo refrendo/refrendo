@@ -1,7 +1,9 @@
 #!/usr/bin/env node
+import { readFile } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import {
   CONFIG_FILENAME,
@@ -16,7 +18,10 @@ import {
   verify,
   type ApprovalRequest,
   type Effort,
-  type TaskContract, noGatesHelp } from "@refrendo/core";
+  type TaskContract,
+  noGatesHelp,
+  RefrendoError,
+} from "@refrendo/core";
 import { c, createRenderer, renderResult } from "./render.js";
 
 const USAGE = `
@@ -53,6 +58,15 @@ Opciones
   -v, --verbose             Muestra razonamiento, iteraciones y consumo
   -q, --quiet               Solo el informe final
   -h, --help                Esta ayuda
+      --version             Version instalada
+
+Antes del primer run hace falta una clave de la API de Anthropic, en un
+fichero .env en la raiz del proyecto o en la variable de entorno:
+
+  ANTHROPIC_API_KEY=sk-ant-...
+
+Se saca de https://console.anthropic.com -> API Keys. Ojo: esa consola es
+distinta de claude.ai y se factura aparte.
 
 Los comandos destructivos (rm -rf, git push, npm publish...) estan bloqueados
 siempre, incluso con --yes.
@@ -88,13 +102,28 @@ async function main(argv: string[]): Promise<number> {
       verbose: { type: "boolean", short: "v" },
       quiet: { type: "boolean", short: "q" },
       help: { type: "boolean", short: "h" },
+      // `-v` es --verbose desde el principio y ya hay quien lo usa, asi que
+      // --version se queda sin forma corta en vez de robarsela.
+      version: { type: "boolean" },
     },
   });
 
   const command = positionals[0];
-  if (values.help || !command) {
+
+  if (values.version === true) {
+    process.stdout.write(`${await packageVersion()}\n`);
+    return 0;
+  }
+
+  // Pedir ayuda no es un error: sale con 0. Invocar sin comando si lo es,
+  // porque nadie quiso eso y un script que lo haga tiene que enterarse.
+  if (values.help === true) {
     process.stdout.write(`${USAGE}\n`);
-    return command ? 0 : 1;
+    return 0;
+  }
+  if (!command) {
+    process.stdout.write(`${USAGE}\n`);
+    return 1;
   }
 
   const root = path.resolve(values.dir ?? process.cwd());
@@ -368,11 +397,33 @@ function numberOr(raw: string | undefined, fallback: number): number {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+/**
+ * Version instalada, leida del package.json que viaja en el propio paquete.
+ *
+ * No es una constante en el fuente a proposito: una constante se queda vieja
+ * en cuanto alguien publica sin tocarla, y entonces `refrendo --version` miente
+ * — que es peor que no tener el comando.
+ */
+async function packageVersion(): Promise<string> {
+  try {
+    const aqui = path.dirname(fileURLToPath(import.meta.url));
+    const crudo = await readFile(path.join(aqui, "..", "package.json"), "utf8");
+    return (JSON.parse(crudo) as { version?: string }).version ?? "desconocida";
+  } catch {
+    return "desconocida";
+  }
+}
+
 main(process.argv.slice(2))
   .then((code) => {
     process.exitCode = code;
   })
   .catch((error: unknown) => {
-    process.stderr.write(`${c.red("Error fatal:")} ${error instanceof Error ? error.message : String(error)}\n`);
+    // Los RefrendoError ya los ha pintado el renderer con su formato y su
+    // explicacion. Repetirlos aqui en crudo hace que un fallo previsto
+    // —no tener clave, por ejemplo— parezca que ademas se ha roto algo.
+    if (!(error instanceof RefrendoError)) {
+      process.stderr.write(`${c.red("Error fatal:")} ${error instanceof Error ? error.message : String(error)}\n`);
+    }
     process.exitCode = 1;
   });

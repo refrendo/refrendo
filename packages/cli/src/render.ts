@@ -169,7 +169,11 @@ export function renderResult(result: RunResult): string {
 
   const lines: string[] = ["", badge[result.status], ""];
 
-  if (result.summary) lines.push(result.summary, "");
+  // Cuando el run falla por un error previsto, el resumen y el mensaje del
+  // error son el mismo texto. Imprimir los dos hacia que "no tienes clave"
+  // pareciera ademas una averia del programa.
+  const mensajeError = result.error?.message ?? "";
+  if (result.summary && result.summary !== mensajeError) lines.push(result.summary, "");
 
   if (result.changes.length > 0) {
     lines.push(c.bold("Cambios"));
@@ -193,7 +197,11 @@ export function renderResult(result: RunResult): string {
     lines.push("");
   }
 
-  if (result.error) lines.push(c.red(`Error [${result.error.code}] ${result.error.message}`), "");
+  if (result.error) {
+    // El codigo en su propia linea: estos mensajes son de varias lineas y
+    // pegarle un prefijo delante rompia la sangria de todo el bloque.
+    lines.push(c.red(c.bold(`Error [${result.error.code}]`)), result.error.message, "");
+  }
 
   lines.push(c.dim(`${formatUsage(result.usage)} · ${(result.durationMs / 1000).toFixed(1)} s`));
   return lines.join("\n");

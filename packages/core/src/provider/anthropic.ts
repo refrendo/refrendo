@@ -72,7 +72,7 @@ export class AnthropicProvider {
       compaction: options.compaction !== false,
     };
     // El SDK resuelve credenciales solo: ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN
-    // o el perfil de `ant auth login`. No hay que inyectar la clave a mano.
+    // El SDK lee ANTHROPIC_API_KEY del entorno solo. No hay que inyectarla a mano.
     this.client = options.client ?? new Anthropic({ maxRetries: 4 });
   }
 

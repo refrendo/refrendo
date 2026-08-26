@@ -12,7 +12,13 @@
 <meta property="og:title" content="Refrendo - agente de trabajo verificado">
 <meta property="og:description" content="Tu agente dice que ha terminado. Esto lo demuestra. Los cambios pasan las puertas de calidad de tu propio proyecto, o se revierten enteros.">
 <meta property="og:locale" content="es_ES">
+<meta property="og:site_name" content="Refrendo">
+<meta property="og:image" content="https://refrendo.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Refrendo: tu agente dice que ha terminado. Esto lo demuestra.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://refrendo.dev/og.png">
 <meta name="twitter:title" content="Refrendo - agente de trabajo verificado">
 <meta name="twitter:description" content="Tu agente dice que ha terminado. Esto lo demuestra.">
 
@@ -302,6 +308,9 @@
   .close { text-align: left; padding: clamp(3rem, 8vw, 6rem) 0 clamp(4rem, 9vw, 7rem); }
   .close h2 { max-width: 20ch; }
 
+  .pie-enlaces { display: flex; gap: 1.4rem; flex-wrap: wrap; }
+  .pie-enlaces a { color: inherit; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 1px; }
+  .pie-enlaces a:hover, .pie-enlaces a:focus-visible { color: var(--accent); }
   footer {
     border-top: 1px solid var(--rule); padding: 2rem 0 3rem;
     font-family: var(--data); font-size: 0.72rem; color: var(--muted);
@@ -610,6 +619,12 @@
 
   <footer>
     <span>Refrendo — agente de trabajo verificado</span>
+    <nav class="pie-enlaces">
+      <a href="https://github.com/refrendo/refrendo">Código</a>
+      <a href="https://www.npmjs.com/package/refrendo">npm</a>
+      <a href="https://github.com/marketplace/actions/refrendo">GitHub Action</a>
+      <a href="https://github.com/refrendo/refrendo/issues/new">Escríbenos</a>
+    </nav>
     <span>Cifras de mercado: Sonar, State of Code 2026 · Harness, 2026</span>
   </footer>
 
