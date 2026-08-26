@@ -16,8 +16,7 @@ import {
   verify,
   type ApprovalRequest,
   type Effort,
-  type TaskContract,
-} from "@refrendo/core";
+  type TaskContract, noGatesHelp } from "@refrendo/core";
 import { c, createRenderer, renderResult } from "./render.js";
 
 const USAGE = `
@@ -157,9 +156,7 @@ async function main(argv: string[]): Promise<number> {
     case "verify": {
       const gates = config.gates ?? (await detectGates(workspace));
       if (gates.length === 0) {
-        process.stdout.write(
-          `${c.yellow("Este proyecto no declara puertas de verificacion.")}\nAnade scripts typecheck/test/lint a package.json, o definelas en ${CONFIG_FILENAME}.\n`,
-        );
+        process.stdout.write(`${c.yellow(noGatesHelp(CONFIG_FILENAME))}\n`);
         return 1;
       }
       const report = await verify(workspace, bus.emit, { gates });

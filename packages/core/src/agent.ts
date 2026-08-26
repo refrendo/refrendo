@@ -21,7 +21,7 @@ import type {
   ToolContext,
   VerificationReport,
 } from "./types.js";
-import { detectGates, verify, type Gate } from "./verify.js";
+import { detectGates, verify, type Gate, noGatesHelp } from "./verify.js";
 import { Workspace } from "./workspace.js";
 
 export interface AgentOptions {
@@ -117,11 +117,7 @@ export class RefrendoAgent {
     try {
       const gates = this.options.gates ?? (await detectGates(this.workspace));
       if (gates.length === 0) {
-        this.emit({
-          type: "warning",
-          message:
-            "El proyecto no declara puertas de verificacion (typecheck, test, lint o build). El resultado no se podra verificar automaticamente.",
-        });
+        this.emit({ type: "warning", message: noGatesHelp() });
       }
 
       // --- Fase 1: planificar -------------------------------------------------

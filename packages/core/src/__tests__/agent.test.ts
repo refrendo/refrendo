@@ -182,9 +182,10 @@ describe("proyectos sin puertas", () => {
     expect(result.status).toBe("unverified");
     expect(result.verification).toBeNull();
     expect(await workspace.exists("a.txt")).toBe(true);
-    expect(
-      events.some((event) => event.type === "warning" && event.message.includes("no declara puertas")),
-    ).toBe(true);
+    const aviso = events.find((event) => event.type === "warning");
+    expect(aviso?.message).toContain("No se ha detectado ninguna puerta");
+    expect(aviso?.message).toContain("refrendo.config.json");
+    expect(aviso?.message).toContain('"gates"');
   });
 
   it("revierte si el agente ni siquiera llega a declarar el trabajo terminado", async () => {
