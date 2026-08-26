@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Refrendo">
+  <title>Refrendo</title>
+  <!--
+    La R dibujada como un trazo unico y continuo que termina en el golpe
+    ascendente de un visto bueno. Un refrendo es la contrafirma: la segunda
+    firma que da validez a lo que otro ya firmo, y una firma es un solo gesto.
+    Por eso la pierna de la R no lleva un check al lado: la pierna ES el check.
+  -->
+  <path d="M17 84 V12 H42 a19 19 0 0 1 0 38 H25 L54 84 L82 50"
+        fill="none" stroke="currentColor" stroke-width="13"
+        stroke-linejoin="miter" stroke-linecap="butt"/>
+</svg>
