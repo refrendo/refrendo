@@ -38,5 +38,13 @@ export type {
   VerificationReport,
 } from "./types.js";
 export { renderMarkdownReport, renderOneLiner, type ReportOptions } from "./report.js";
-export { detectGates, formatFailures, verify, type Gate } from "./verify.js";
+export {
+  detectGates,
+  detectPackageManager,
+  formatFailures,
+  noGatesHelp,
+  verify,
+  type Gate,
+  type PackageManager,
+} from "./verify.js";
 export { Workspace, globToRegExp, type WorkspaceOptions } from "./workspace.js";

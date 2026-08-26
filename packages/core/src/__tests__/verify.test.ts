@@ -7,7 +7,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { AnthropicProvider, normalizeSchemaForApi, toApiTool, withConversationCacheBreakpoint } from "../provider/anthropic.js";
 import { EXECUTOR_TOOLS, PLANNER_TOOLS } from "../tools/index.js";
 import { editFile, readFile } from "../tools/fs.js";
-import { detectGates, formatFailures, verify } from "../verify.js";
+import { detectGates, detectPackageManager, formatFailures, noGatesHelp, verify } from "../verify.js";
 import { Workspace } from "../workspace.js";
 import { ChangeJournal } from "../journal.js";
 import { Policy, defaultPolicyConfig } from "../policy.js";
@@ -282,5 +282,92 @@ describe("objetos anidados en modo estricto", () => {
       recorrer(schema, tool.name);
       expect(abiertos).toEqual([]);
     }
+  });
+});
+
+describe("deteccion de puertas fuera de npm", () => {
+  const escribir = async (ficheros: Record<string, string>): Promise<void> => {
+    for (const [nombre, contenido] of Object.entries(ficheros)) {
+      await fs.mkdir(path.dirname(path.join(root, nombre)), { recursive: true });
+      await fs.writeFile(path.join(root, nombre), contenido);
+    }
+  };
+  const comandos = async (): Promise<string[]> =>
+    (await detectGates(workspace)).map((g) => `${g.name}=${g.command}`);
+
+  // El fallo que motivo todo esto: a un repositorio pnpm o yarn se le mandaba
+  // `npm test`, que resuelve binarios donde npm los busca y no donde estan.
+  it.each([
+    ["pnpm-lock.yaml", "pnpm"],
+    ["yarn.lock", "yarn"],
+    ["bun.lockb", "bun"],
+  ])("%s hace que los scripts se ejecuten con %s", async (lockfile, gestor) => {
+    await escribir({
+      "package.json": JSON.stringify({ scripts: { test: "vitest run", build: "tsup" } }),
+      [lockfile]: "",
+    });
+    expect(await detectPackageManager(workspace)).toBe(gestor);
+    expect(await comandos()).toEqual([`test=${gestor} run test`, `build=${gestor} run build`]);
+  });
+
+  it("el campo packageManager manda sobre un lockfile olvidado tras migrar", async () => {
+    await escribir({
+      "package.json": JSON.stringify({ packageManager: "pnpm@9.1.0", scripts: { test: "vitest" } }),
+      "yarn.lock": "",
+    });
+    expect(await detectPackageManager(workspace)).toBe("pnpm");
+  });
+
+  it("sin lockfile ni declaracion se queda en npm", async () => {
+    await escribir({ "package.json": JSON.stringify({ scripts: { test: "vitest" } }) });
+    expect(await comandos()).toEqual(["test=npm run test"]);
+  });
+
+  it.each([
+    ["go.mod", "module ejemplo.com/svc", "test=go test ./..."],
+    ["Cargo.toml", "[package]" + String.fromCharCode(10) + 'name = "svc"', "test=cargo test"],
+    ["pom.xml", "<project></project>", "test=mvn -B test"],
+    ["build.gradle.kts", "plugins {}", "test=./gradlew test"],
+  ])("%s produce una puerta de tests", async (manifiesto, contenido, esperado) => {
+    await escribir({ [manifiesto]: contenido });
+    expect(await comandos()).toContain(esperado);
+  });
+
+  // Los proyectos Python modernos configuran pytest en pyproject.toml y dejan
+  // los tests junto al codigo, sin `tests/` que delate nada.
+  it("pytest declarado en pyproject.toml cuenta como puerta", async () => {
+    await escribir({ "pyproject.toml": "[tool.pytest.ini_options]" + String.fromCharCode(10) + 'testpaths = ["src"]' });
+    expect(await comandos()).toEqual(["test=python -m pytest -q"]);
+  });
+
+  it("un pyproject.toml sin pytest no inventa una puerta", async () => {
+    await escribir({ "pyproject.toml": "[project]" + String.fromCharCode(10) + 'name = "svc"' });
+    expect(await comandos()).toEqual([]);
+  });
+
+  // En un monorepo poliglota mandan los scripts: son lo que el equipo ya usa.
+  it("los scripts de JS ganan al manifiesto de otro ecosistema", async () => {
+    await escribir({
+      "package.json": JSON.stringify({ scripts: { test: "vitest run" } }),
+      "go.mod": "module ejemplo.com/svc",
+    });
+    expect(await comandos()).toEqual(["test=npm run test"]);
+  });
+
+  it("el script placeholder de npm init no tapa el ecosistema real", async () => {
+    await escribir({
+      "package.json": JSON.stringify({ scripts: { test: 'echo "Error: no test specified" && exit 1' } }),
+      "go.mod": "module ejemplo.com/svc",
+    });
+    expect(await comandos()).toContain("test=go test ./...");
+  });
+
+  // Sin esto el usuario recibe "no puedo verificar" y se queda sin salida.
+  it("el aviso de cero puertas trae el fichero listo para pegar", () => {
+    const ayuda = noGatesHelp("refrendo.config.json");
+    expect(ayuda).toContain("refrendo.config.json");
+    expect(ayuda).toContain('"gates"');
+    const json = ayuda.slice(ayuda.indexOf("{"), ayuda.lastIndexOf("}") + 1);
+    expect(() => JSON.parse(json)).not.toThrow();
   });
 });

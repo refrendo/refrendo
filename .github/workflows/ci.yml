@@ -39,17 +39,17 @@ jobs:
       - name: Comprobar tipos
         run: npm run typecheck
 
-      - name: Ejecutar tests
-        run: npm test
-
-      # Compilar es una puerta mas: el codigo puede pasar el typecheck y aun
-      # asi no emitir, y lo que se publica en npm es lo emitido.
       - name: Compilar los paquetes
         run: npm run build
 
       # Lo que de verdad recibe un usuario es el tarball, no el repositorio.
       # Esto habria detectado los rangos de dependencia invalidos antes de
       # publicarlos, que es como se descubrieron.
+      - name: Ejecutar tests
+        run: npm test
+
+      # Compilar es una puerta mas: el codigo puede pasar el typecheck y aun
+      # asi no emitir, y lo que se publica en npm es lo emitido.
       - name: Comprobar el empaquetado
         run: |
           set -euo pipefail
