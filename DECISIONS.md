@@ -245,28 +245,115 @@ decisión aprobada.
 ---
 
 ## DEC-012 — Proveedor de correo
-ESTADO: DESCONOCIDO
+ESTADO: DECIDIDO
 FECHA_DECISION: UNVERIFIED
 FECHA_REGISTRO: UNVERIFIED
 FECHA_FUENTE: UNVERIFIED
 FECHA_REF: n/a
 ORIGEN: USUARIO
-ORIGEN_REF: conversación en curso; sin decisión tomada
+ORIGEN_REF: decisión explícita en conversación, tras presentarle Hostinger frente a Google Workspace con costes y evidencia
 ORIGEN_VERIFICABLE: NO
-MOTIVO: no se ha elegido entre Hostinger y Google Workspace.
+MOTIVO: **Hostinger**. El DNS del dominio ya está allí —nameservers
+`solar/lunar.dns-parking.com`, comprobado—, así que autoconfigura SPF y DKIM sin
+que nadie edite registros a mano junto a los cuatro A que sostienen la web.
+Cuesta una cuarta parte que Google Workspace: 1,59 €/mes al renovar frente a
+6,80 €. Si la entregabilidad medida no da, migrar son veinte minutos.
+ALCANCE: **un solo buzón humano, correo manual 1:1 de bajo volumen.** NO implica
+ninguna decisión sobre automatización de outreach, plataformas de cold email,
+SMTP programático, email transaccional, warm-up ni campañas masivas. Todo eso
+sigue siendo DESCONOCIDO y requeriría una decisión aparte.
+BUZON_REMITENTE: joan@refrendo.dev
+ALIAS_PUBLICO: hello@refrendo.dev
+AUTENTICACION: [VERIFICADO] SPF PASS · DKIM PASS · DMARC PASS. Hostinger
+autoconfiguró los registros; nadie editó DNS a mano y los cuatro registros A que
+sostienen la web quedaron intactos, comprobado antes y después.
+ENTREGABILIDAD_INICIAL: [VERIFICADO] medición puntual del arranque, no un
+certificado de reputación: Mail-Tester **8.9/10** · SPF PASS · DKIM PASS · DMARC
+PASS · Gmail entregó en la pestaña **Principal**, no en spam, en unos 3 segundos
+· mensaje enviado como text/plain · sin evidencia de lista negra en la prueba
+realizada. Es el dato que sustituye a la opinión que Claude no podía sostener: se
+acordó ≥8/10 para quedarse con Hostinger y se cumplió. Cubre los envíos
+probados; no dice nada de la trayectoria futura, que sigue en
+`DESCONOCIDO_CLAVE`.
+ALIAS_ENTREGA: [VERIFICADO] `hello@refrendo.dev` es un alias funcional y los
+mensajes enviados a esa dirección se entregan en el buzón `joan@refrendo.dev`.
+Comprobado sobre el buzón real con el MCP de Hostinger Email: `GET /api/v1/me`
+devuelve `joan@refrendo.dev` como única mailbox del order y responde 200, luego
+el buzón es accesible por el MCP. En `INBOX` aparece uid 2, asunto
+`Prueba test`, de `jamdoblas@gmail.com` a `hello@refrendo.dev`, fecha
+`2026-08-27T17:56:52Z`; el envío recíproco está en `INBOX.Sent` uid 2, de
+`joan@refrendo.dev` a `jamdoblas@gmail.com`, fecha `2026-08-27T18:09:25Z`
+(20:09 hora de España, CEST).
+VERIFICACION_MCP: esa comprobación se hizo **exclusivamente con operaciones
+GET / read-only** (`/api/v1/me`, `/folders`, `/folders/{folder}/messages`). No
+se envió, borró, movió ni archivó ningún mensaje, y no se tocó ningún flag: los
+dos mensajes de `INBOX` seguían con `flags: []` y `unseen: true` tras la lectura.
+No se expusieron credenciales — el token Bearer lo inyecta el servidor MCP, no
+viajó en argumentos ni apareció en las respuestas. La búsqueda del API
+(`POST .../messages/search`) es de clase write y no se usó; bastó listar con GET.
+DNS_CONGELADO: no se añade `rua=` al DMARC por ahora, no se migra a Google
+Workspace y no se toca ningún registro. Decisión explícita del usuario.
+HISTORIAL:
+  - (sin fecha demostrable) · DESCONOCIDO → DECIDIDO · origen: usuario ·
+    fuente-fecha: conversación · motivo: elegido Hostinger sobre Google Workspace ·
+    impacto: desbloquea el outreach por correo, que era el bloqueo principal
+    tras confirmarse que no existe cuenta de X.
+  - 2026-08-27 · DECIDIDO → DECIDIDO, sin cambio de estado ni de alcance ·
+    origen: verificación · fuente-fecha: cabecera `Date` de las respuestas de
+    `api.mail.hostinger.com` (`Thu, 27 Aug 2026 19:11:00 GMT`) · motivo: añadida
+    evidencia [VERIFICADO] del alias y del acceso al buzón por MCP, solo lectura ·
+    impacto: ninguno sobre lo decidido; sigue cubriendo únicamente correo humano
+    manual 1:1 y recepción, y no decide marketing, automatización ni
+    transaccional.
+  - 2026-08-27 · DECIDIDO → DECIDIDO, sin cambio de estado ni de alcance ·
+    origen: verificación · fuente-fecha: consulta `nslookup -type=MX refrendo.dev
+    8.8.8.8` del mismo día · motivo: corregidas dos contradicciones internas. La
+    `NOTA` afirmaba como hecho actual que el dominio no tenía MX, SPF, DKIM ni
+    DMARC, cuando eso era el estado previo: pasa a `NOTA_ANTERIOR` y la `NOTA`
+    recoge el estado actual. Y `DESCONOCIDO_CLAVE` decía "no se ha medido" junto a
+    un 8.9/10: ahora `ENTREGABILIDAD_INICIAL` es la medición puntual `[VERIFICADO]`
+    y `DESCONOCIDO_CLAVE` es la reputación sostenida, que sigue `[DESCONOCIDO]` ·
+    impacto: ninguno sobre lo decidido; solo semántica temporal y separación entre
+    lo medido y lo no medido.
+MOTIVO_ANTERIOR: no se había elegido entre Hostinger y Google Workspace.
 IMPACTO: proveedores, costes, integraciones, seguridad
-CHECK: correo-sin-configurar
-BLOQUEA: configuración SMTP real, credenciales de envío, registros MX y DKIM,
-envío de cualquier correo real
-NO_BLOQUEA: plantillas de mensaje, interfaz de envío independiente del proveedor,
-tests con emisor falso, la lista de empresas objetivo, el script verificador
-NOTA: [VERIFICADO] a 2026-08-27, `refrendo.dev` no tiene MX, SPF, DKIM ni DMARC.
-Opciones sobre la mesa: Hostinger (autoconfigura SPF y DKIM, DNS ya allí,
-~2,99 $/mes) y Google Workspace (MX único `smtp.google.com` prioridad 1,
-6,80 €/mes, DKIM manual).
-DESCONOCIDO_CLAVE: la reputación de envío real de cada uno. No se ha medido.
-Método acordado para convertirlo en dato: montar el más barato y puntuar con
-mail-tester.com. ≥8/10 se queda; <7 se migra.
+CHECK: n/a
+CHECK_ANTERIOR: `correo-sin-configurar` comprobaba que el dominio NO tuviera MX.
+Servía mientras la decisión estaba abierta: si aparecía un MX, el fichero se
+había quedado atrás. Al decidirse Hostinger deja de valer —en cuanto se
+configure el buzón habrá MX y esa comprobación fallaría marcando como error lo
+que ahora es lo correcto. Se retira en lugar de invertirla: añadir un
+`correo-configurado` exigiría tocar `scripts/auditar-control.mjs`, que está
+congelado salvo fallo real, y esto no lo es.
+BLOQUEA: enviar correo a prospectos antes de verificar SPF, DKIM y DMARC con
+evidencia; cualquier automatización de outreach, plataforma de cold email o SMTP
+programático, que siguen fuera de esta decisión.
+NO_BLOQUEA: contratar el plan, crear el buzón y el alias, configurar los
+registros, medir la entregabilidad, preparar la Oleada 1 para correo, publicar
+el contacto en la web.
+NOTA: [VERIFICADO] estado **actual** del correo del dominio, a 2026-08-27 y ya
+configurado Hostinger: registros MX en su sitio —`mx1.hostinger.com` prioridad 5
+y `mx2.hostinger.com` prioridad 10, consultados contra `8.8.8.8` para no fiarse
+de la caché del resolutor local (Anexo A de `CLAUDE.md`)— y SPF, DKIM y DMARC en
+PASS según `AUTENTICACION`. La recepción está comprobada de punta a punta: un
+correo de Gmail entró en el buzón a través del alias, ver `ALIAS_ENTREGA`.
+NOTA_ANTERIOR: esto describía el estado **previo** a configurar Hostinger y ya no
+es un hecho vigente; se conserva porque explica de dónde salió la decisión. Decía:
+`[VERIFICADO]` a 2026-08-27, antes del alta del buzón, `refrendo.dev` no tenía MX,
+SPF, DKIM ni DMARC; las opciones sobre la mesa eran Hostinger (autoconfigura SPF y
+DKIM, DNS ya allí, ~2,99 $/mes) y Google Workspace (MX único `smtp.google.com`
+prioridad 1, 6,80 €/mes, DKIM manual).
+DESCONOCIDO_CLAVE: [DESCONOCIDO] la reputación y la entregabilidad **sostenidas**
+del dominio a medio y largo plazo. El dominio es nuevo y todavía no existe
+historial de envío suficiente; que la medición inicial saliera en verde no predice
+la trayectoria. Lo que hay medido cubre los envíos de prueba, no una serie. No se
+convierte en `[VERIFICADO]` con la evidencia de `ENTREGABILIDAD_INICIAL`.
+Relacionado: DEC-013, que trata la antigüedad del dominio como riesgo.
+METODO_DE_MEDIDA: el método acordado para el arranque —montar el más barato y
+puntuar con mail-tester.com, ≥8/10 se queda y <7 se migra— ya se ejecutó y dio
+8.9/10. Para la entregabilidad sostenida no hay método acordado: haría falta
+decidir qué se mide, cada cuánto y con qué umbral, y eso es una decisión aparte
+que nadie ha tomado.
 
 ---
 
