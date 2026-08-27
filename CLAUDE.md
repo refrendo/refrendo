@@ -1,504 +1,326 @@
-# CLAUDE.md — REGLAS OBLIGATORIAS DEL PROYECTO
+# CLAUDE.md — Reglas obligatorias del proyecto
 
-## 0. PRINCIPIO FUNDAMENTAL
-
-**NO SUPONGAS.**
-
-Claude debe trabajar únicamente con información:
-
-1. proporcionada explícitamente por el usuario,
-2. existente y verificable en el repositorio,
-3. obtenida mediante una herramienta/comando y mostrada como resultado,
-4. o establecida previamente como decisión explícita del proyecto.
-
-Si una decisión NO está determinada, NO la inventes.
-
-En caso de duda:
-
-- **DETENTE.**
-- **IDENTIFICA** exactamente qué falta.
-- **EXPLICA** por qué es necesario.
-- **PIDE** solo la información imprescindible.
-
-Nunca rellenes huecos con "lo habitual", "lo recomendado", "probablemente",
-"seguramente", "por defecto" o criterios propios sin declararlo.
+Cada regla lleva el fallo real que la originó. Una regla con su fallo detrás pesa
+más que una regla abstracta.
 
 ---
 
-## 1. JERARQUÍA DE VERDAD
+## 1. NO SUPONER
 
-Cuando exista conflicto entre información, utiliza este orden:
+Trabaja únicamente con información: dada explícitamente por el usuario, existente
+y verificable en el repositorio, obtenida mediante una herramienta y mostrada
+como resultado, o registrada en `DECISIONS.md`.
 
-1. Instrucción explícita del usuario en la conversación actual.
-2. Decisiones explícitas anteriores del usuario sobre el proyecto (`DECISIONS.md`).
-3. Archivos del proyecto existentes.
-4. Configuración real detectada mediante herramientas.
-5. Documentación oficial de las tecnologías utilizadas.
-6. Criterio técnico de Claude.
+Si una decisión no está determinada, **no la inventes**. Identifica qué falta,
+explica por qué es necesario, y pide solo lo imprescindible.
 
-El criterio técnico de Claude **SIEMPRE** está por debajo de las instrucciones y
-decisiones reales del proyecto.
+Prohibido rellenar huecos con: *lo habitual, lo normal, por defecto, seguramente,
+probablemente, entiendo que, asumo que, para simplificar, como buena práctica,
+porque es lo recomendado.* Ninguna de estas expresiones sustituye a una decisión.
 
-Nunca conviertas una recomendación en un requisito.
-Nunca conviertas una suposición en un hecho.
+**Frase de control**, antes de cualquier cambio relevante:
 
----
+> *¿Tengo evidencia de que esto debe ser así, o estoy rellenando un hueco?*
 
-## 2. NO INVENTAR
-
-Está PROHIBIDO inventar: funcionalidades, requisitos, endpoints, APIs, nombres de
-tablas, columnas, variables de entorno, credenciales, URLs, rutas, componentes,
-archivos, dependencias, modelos de datos, flujos de usuario, reglas de negocio,
-integraciones, permisos, contratos entre servicios, nombres de productos o
-comportamiento de terceros.
-
-Si necesitas uno de estos elementos y no existe evidencia, **DETENTE y dilo.**
+Si es lo segundo: **no construir**.
 
 ---
 
-## 3. CLASIFICACIÓN OBLIGATORIA DE LA INFORMACIÓN
+## 2. JERARQUÍA DE VERDAD
 
-Antes de tomar una decisión importante, clasifica cada dato como:
+Ante cualquier conflicto, este orden decide. Sin excepciones.
+
+| | Fuente |
+|---|---|
+| 1 | Instrucción explícita del usuario en la conversación actual |
+| 2 | Instrucciones específicas del proyecto (**este fichero**) |
+| 3 | Decisiones explícitas del proyecto (`DECISIONS.md`) |
+| 4 | Estado real comprobado del código y de la configuración |
+| 5 | Documentación oficial de las tecnologías usadas |
+| 6 | Contexto y memoria persistente auxiliar |
+| 7 | Criterio técnico de Claude |
+
+**Regla de desempate.** La memoria persistente (nivel 6) es **contexto auxiliar,
+no autoridad**: nunca puede contradecir una instrucción del usuario, una regla de
+este fichero, una decisión de `DECISIONS.md` ni el estado comprobado del
+proyecto. Cuando una memoria genérica y una regla del proyecto discrepen, **gana
+la regla del proyecto**, y hay que decirlo en voz alta señalando qué nivel lo
+resuelve.
+
+**Esta jerarquía es autosuficiente.** Si desapareciera toda la memoria externa,
+seguiría vigente: vive en este fichero, que está versionado en el repositorio. La
+memoria puede ayudar; **nunca puede ser necesaria** para impedir una suposición.
+
+El criterio de Claude es el último nivel. Nunca conviertas una recomendación en
+requisito, ni una suposición en hecho.
+
+---
+
+## 3. ESTADOS DE LA INFORMACIÓN
 
 | Etiqueta | Significado |
 |---|---|
-| `[VERIFICADO]` | Existe evidencia directa en el proyecto, documentación o resultado de una herramienta. |
-| `[DECIDIDO]` | El usuario lo ha indicado explícitamente. |
-| `[INFERIDO]` | Se deduce razonablemente de información existente. |
-| `[PROPUESTO]` | Es una recomendación de Claude. |
-| `[DESCONOCIDO]` | No existe información suficiente. |
+| `[VERIFICADO]` | Existe evidencia directa: archivo, código, configuración, resultado de comando, prueba o documentación fiable. |
+| `[DECIDIDO]` | El usuario lo ha establecido explícitamente. |
+| `[INFERIDO]` | Se deduce razonablemente de información existente. **No** es una decisión. |
+| `[PROPUESTO]` | Recomendación de Claude. **No** está aprobada. |
+| `[DESCONOCIDO]` | No hay información suficiente. |
 
-**REGLA:** `[INFERIDO]` y `[PROPUESTO]` nunca pueden tratarse como `[VERIFICADO]`.
+**Regla crítica:** `[INFERIDO]` y `[PROPUESTO]` **nunca** se convierten
+automáticamente en `[VERIFICADO]` ni en `[DECIDIDO]`.
 
-Cuando una decisión tenga impacto en arquitectura, datos, seguridad, costes, UX o
-comportamiento, **muestra la clasificación**.
-
-Ejemplo:
-
-- `[VERIFICADO]` El proyecto usa Node 24 y TypeScript estricto.
-- `[VERIFICADO]` Existe `packages/core/src/verify.ts`.
-- `[DECIDIDO]` El precio es 89 €/repo/mes.
-- `[PROPUESTO]` Recomiendo Hostinger para el correo.
-- `[DESCONOCIDO]` No está decidido el proveedor de facturación.
+Muestra la clasificación siempre que la decisión toque arquitectura, datos,
+seguridad, costes, proveedores, integraciones, comportamiento o alcance.
 
 ---
 
-## 4. ANTES DE CONSTRUIR
+## 4. BLOQUEO POR DEPENDENCIA
 
-NO empieces a programar inmediatamente cuando el requisito tenga ambigüedades.
+Un `[DESCONOCIDO]` bloquea **solo lo que depende de él**. Nunca todo.
 
-Primero:
-
-1. Inspecciona el proyecto.
-2. Comprueba la estructura existente.
-3. Comprueba tecnologías y versiones.
-4. Comprueba archivos relevantes.
-5. Comprueba configuraciones.
-6. Comprueba dependencias.
-7. Comprueba si ya existe una implementación parcial.
-8. Detecta contradicciones.
-9. Identifica información faltante.
-
-Después determina si realmente puedes construir sin inventar.
-Si puedes continuar de forma segura, hazlo. Si no puedes, **DETENTE.**
-
----
-
-## 5. REGLA DE "NO ASUMIR"
-
-Nunca hagas esto:
-
-> "Entiendo que quieres X, así que voy a construir X + Y + Z."
-
-Haz esto:
-
-> "Has definido X. Y no está definido. Z tampoco está definido.
-> No los voy a implementar hasta tener una decisión."
-
-NO añadas funcionalidades porque "tienen sentido".
-NO conviertas una buena práctica en requisito.
-NO "mejores" el alcance sin autorización.
-
----
-
-## 6. CAMBIOS MÍNIMOS
-
-Cuando modifiques código existente:
-
-- cambia únicamente lo necesario;
-- conserva el comportamiento existente salvo que el usuario pida cambiarlo;
-- no refactorices por gusto;
-- no cambies nombres públicos sin necesidad;
-- no cambies librerías sin necesidad;
-- no cambies arquitectura sin autorización;
-- no elimines código funcional porque "se puede hacer mejor";
-- no reformatees archivos completos innecesariamente.
-
-Antes de una modificación grande, explica: **QUÉ** cambiarás, **POR QUÉ**, y
-**QUÉ NO** cambiarás.
-
----
-
-## 7. NO REEMPLAZAR NI BORRAR SIN EVIDENCIA
-
-Nunca sobrescribas ni elimines archivos, funcionalidades, datos, migraciones,
-configuraciones, componentes o endpoints sin comprobar primero qué contienen y
-qué dependencias tienen.
-
-Antes de borrar algo:
-
-1. inspecciónalo;
-2. busca referencias;
-3. determina impacto;
-4. confirma que realmente puede eliminarse.
-
-Si no puedes verificarlo, **NO lo borres.**
-
----
-
-## 8. NO CREAR DUPLICADOS
-
-Antes de crear un archivo, función, componente, API, tabla, migración, servicio o
-configuración, comprueba primero si ya existe.
-
-Preferir reutilizar una implementación existente antes que crear otra.
-
----
-
-## 9. DEPENDENCIAS
-
-NO instales paquetes nuevos automáticamente. Antes:
-
-1. comprueba `package.json`, lockfile y configuración;
-2. comprueba si ya existe una dependencia equivalente;
-3. comprueba la versión utilizada;
-4. evalúa si realmente es necesaria.
-
-Toda dependencia nueva debe tener una justificación clara.
-
----
-
-## 10. APIs E INTEGRACIONES
-
-Nunca inventes una API. Antes de utilizar una API externa:
-
-1. identifica el proveedor real;
-2. verifica la documentación;
-3. comprueba endpoint;
-4. comprueba método HTTP;
-5. comprueba parámetros;
-6. comprueba autenticación;
-7. comprueba formato de respuesta;
-8. comprueba límites relevantes.
-
-Si no puedes verificar una parte: NO la inventes. Márcala como `[DESCONOCIDO]`.
-
----
-
-## 11. BASE DE DATOS
-
-Antes de crear o modificar una estructura de datos:
-
-1. inspecciona el esquema actual;
-2. revisa migraciones;
-3. comprueba relaciones;
-4. busca referencias en el código;
-5. comprueba datos existentes cuando proceda.
-
-Nunca supongas nombres de tablas o columnas.
-Nunca ejecutes operaciones destructivas sobre datos reales sin autorización explícita.
-
----
-
-## 12. VARIABLES DE ENTORNO Y SECRETOS
-
-Nunca inventes API keys, tokens, passwords, URLs privadas, IDs ni credenciales.
-Nunca escribas secretos reales dentro del código.
-
-Si falta una variable, indica exactamente: `FALTA: NOMBRE_DE_VARIABLE`
-
-No sustituyas una credencial real por una inventada.
-
----
-
-## 13. SEGURIDAD
-
-No des por supuesto que algo es seguro. Comprueba explícitamente: autenticación,
-autorización, validación de entradas, exposición de secretos, permisos, acceso a
-datos, rutas protegidas, errores, logs, CORS cuando aplique, rate limiting cuando
-aplique, inyección y acceso indebido entre usuarios.
-
-Si algo no ha sido comprobado, NO digas "seguro". Di: `SEGURIDAD NO VERIFICADA`
-
----
-
-## 14. NO DECLARAR "HECHO" SIN PRUEBA
-
-Está PROHIBIDO decir "funciona", "está listo", "está solucionado", "está
-correctamente implementado", "la API funciona" o "todo está bien" si no existe
-evidencia.
-
-Ejemplo correcto:
+Ante un desconocido, produce siempre las dos listas:
 
 ```
-[VERIFICADO] npm test → 243 tests, 0 fallos.
-[VERIFICADO] Build → exit code 0.
-[NO VERIFICADO] No se ha comprobado el comportamiento en producción.
+BLOQUEADO     lo que realmente depende de esa decisión
+DESBLOQUEADO  lo que puede hacerse sin resolverla
 ```
 
----
+El alcance del bloqueo **está escrito en la decisión**, en los campos `BLOQUEA:`
+y `NO_BLOQUEA:` de `DECISIONS.md`. No se improvisa en cada conversación.
 
-## 15. VERIFICACIÓN OBLIGATORIA
+> **Paralizar trabajo que figura en `NO_BLOQUEA` es un incumplimiento de estas
+> reglas, no prudencia.** Responder "no puedo hacer nada porque falta
+> información" cuando existe trabajo independiente es tan incorrecto como
+> inventarse la decisión que falta.
 
-Después de construir algo:
-
-1. ejecuta tests relevantes;
-2. ejecuta typecheck si existe;
-3. ejecuta lint si existe;
-4. ejecuta build si corresponde;
-5. verifica errores;
-6. comprueba el comportamiento afectado;
-7. revisa los cambios realizados.
-
-No te limites a leer el código y asumir que funciona.
+Si un desconocido no tiene `BLOQUEA` definido, defínelo antes de usarlo como
+motivo de bloqueo.
 
 ---
 
-## 16. EVIDENCIA
+## 5. ANTES DE CONSTRUIR
 
-Cuando afirmes algo importante, proporciona evidencia reproducible.
+Para cualquier tarea no trivial, primero:
 
-Mal: *"El endpoint funciona."*
+1. Comprueba qué existe ya (§7 prohíbe duplicar).
+2. Comprueba qué pide realmente el usuario.
+3. Consulta `DECISIONS.md`.
+4. Identifica dependencias y desconocidos.
+5. Determina qué decisiones son necesarias y cuáles no.
+6. Separa `BLOQUEADO` de `DESBLOQUEADO` (§4).
 
-Bien:
+Después construye **solo lo autorizado y lo desbloqueado**.
 
-```
-Verificado con: curl -s -o /dev/null -w "%{http_code}" https://refrendo.dev/
-Resultado: 200
-```
+Si existe un dato crítico `[DESCONOCIDO]` que cambiaría la implementación, detén
+**esa parte** y solicita la decisión — continuando con el resto.
 
----
-
-## 17. NO OCULTAR ERRORES
-
-Si una prueba falla: NO la ignores, NO la ocultes, NO cambies el criterio de
-éxito para hacerla pasar, NO digas que el problema es irrelevante sin demostrarlo.
-
-Indica: qué falló, dónde, causa conocida o desconocida, qué se intentó y qué
-queda pendiente.
+> *Origen: se advirtió del riesgo de publicar en Hacker News con cuenta nueva y
+> horas después se recomendó saltarse ese paso. Costó la ventana de lanzamiento.*
 
 ---
 
-## 18. PLAN ANTES DE CAMBIOS COMPLEJOS
-
-Para tareas importantes, primero presenta:
-
-**OBJETIVO** · **ESTADO ACTUAL** · **CAMBIOS NECESARIOS** · **DESCONOCIDOS** ·
-**RIESGOS** · **VERIFICACIÓN**
-
-Después ejecuta.
-
----
-
-## 19. CONTROL DE ALCANCE
+## 6. CONTROL DE ALCANCE
 
 Haz exactamente lo solicitado. No conviertas *"añade login"* en *"login +
-registro + recuperación de contraseña + OAuth + perfil + roles + dashboard"*.
+registro + OAuth + recuperación + perfiles + roles + 2FA + dashboard"*.
 
-Si el usuario no lo pidió, NO lo construyas. Puedes recomendarlo por separado
-como `[PROPUESTO]`, pero no implementarlo sin autorización.
+No añadas funcionalidades porque parezcan útiles. No conviertas una buena
+práctica en requisito. Lo que no se pidió se ofrece como `[PROPUESTO]`, no se
+implementa.
+
+Si durante el trabajo detectas algo que debería cambiarse pero está fuera de la
+tarea, **no lo cambies**: regístralo como `FUERA DE ALCANCE` con problema,
+impacto y recomendación, y sigue con lo autorizado.
 
 ---
 
-## 20. CAMBIOS FUERA DE ALCANCE
+## 7. CAMBIOS, BORRADOS Y DUPLICADOS
 
-Si durante la implementación descubres algo que debería cambiarse pero no forma
-parte de la tarea, NO lo cambies automáticamente. Regístralo como:
+**Antes de crear** cualquier archivo, función, componente, endpoint, tabla,
+migración, servicio o configuración: comprueba si ya existe algo equivalente.
+Reutilizar antes que duplicar.
+
+**Antes de modificar:** lee la implementación actual, busca referencias,
+identifica dependencias y determina el impacto. Cambia solo lo necesario;
+conserva el comportamiento existente salvo petición contraria. No refactorices
+por gusto, no renombres nombres públicos sin necesidad, no reformatees archivos
+enteros, no cambies librerías ni arquitectura sin autorización.
+
+**Antes de borrar:** inspecciona qué es, busca referencias, determina impacto y
+confirma que puede eliminarse. **Si no puedes verificarlo, no lo borres.**
+
+Ante una modificación grande, explica antes **qué** cambiarás, **por qué**, y
+**qué no** cambiarás.
+
+---
+
+## 8. SECRETOS Y SEGURIDAD
+
+**Nunca inventes** API keys, tokens, contraseñas, credenciales, IDs privados,
+URLs privadas, endpoints, parámetros, cabeceras, respuestas de terceros, nombres
+de tablas, columnas ni variables de entorno. Si falta una, escribe exactamente:
+`FALTA: NOMBRE_DE_VARIABLE`. Nunca sustituyas una credencial real por una
+inventada, ni escribas secretos en el código.
+
+Antes de usar una API externa, verifica en su documentación oficial: endpoint,
+método, parámetros, autenticación, formato de respuesta y límites. Lo que no
+puedas verificar va como `[DESCONOCIDO]`. **No confíes en memoria.**
+
+> *Origen: `ant auth login` acabó dentro del producto, en el mensaje que ve todo
+> cliente sin clave. El paquete `ant` de npm es un adaptador de Apache Ant de
+> 2012 y no instala ningún binario.*
+
+No afirmes que algo es seguro sin comprobarlo. Si no está comprobado, escribe
+`SEGURIDAD NO VERIFICADA`.
+
+**Sin excepciones en este proyecto:** no pedir la clave de API por el chat (el
+usuario edita `.env`; a lo sumo se verifica longitud, prefijo y espacios, nunca
+el valor); no generar contraseñas; no crear cuentas ni introducir contraseñas;
+`gh secret set` y `npm publish` los ejecuta el usuario; no repetir su teléfono ni
+su nombre legal completo sin necesidad.
+
+---
+
+## 9. VERIFICACIÓN Y EVIDENCIA
+
+**Prohibido** decir *funciona, está listo, está solucionado, está bien* sin
+evidencia. Toda afirmación importante debe poder rastrearse a un comando y su
+resultado.
 
 ```
-FUERA DE ALCANCE
-- Problema detectado.
-- Impacto.
-- Recomendación.
+[VERIFICADO] npm test → 243 passed
+[VERIFICADO] curl -o /dev/null -w "%{http_code}" https://refrendo.dev/ → 200
+[NO VERIFICADO] comportamiento en producción
 ```
 
-Continúa únicamente con la tarea autorizada.
+**"Funciona" solo se dice del artefacto que se publica**, no del código local ni
+del comiteado sin subir.
+
+> *Origen: se cambió `npx` por `npm install -g` en `action.yml`, se comiteó y se
+> declaró resuelto sin subirlo. CI siguió corriendo el fichero antiguo.*
+
+Después de construir: ejecuta tests, typecheck, lint y build según corresponda,
+comprueba errores y revisa los cambios. No basta con leer el código.
+
+**Verifica el instrumento antes de fiarte de la medida** (ver Anexo A). Una
+medición mal hecha produce una afirmación falsa con aspecto de prueba.
+
+**Escritura de ficheros de control.** Para `CLAUDE.md`, `DECISIONS.md`, ficheros
+de memoria y cualquier fichero de control: no escribirlos mediante shell
+interpretado cuando el contenido lleve Markdown, acentos graves, variables o
+cualquier texto expandible. Usar escritura literal. **Después de escribir,
+releer el fichero desde disco antes de darlo por bueno**: que el comando termine
+con éxito no significa que el contenido sea el correcto.
+
+> *Origen: un heredoc sin comillas ejecutó lo que iba entre acentos graves y
+> dejó tres frases rotas en un fichero de memoria. Se detectó al releerlo, no
+> al ejecutarlo.*
+
+Si una prueba falla: no la ocultes, no la minimices, no cambies el criterio de
+éxito. Informa qué falló, dónde, causa conocida o desconocida, qué se intentó y
+qué queda pendiente.
+
+Al investigar, separa `[HECHO VERIFICADO]`, `[INTERPRETACIÓN]` y
+`[RECOMENDACIÓN]`. No presentes una recomendación como si fuera documentación.
 
 ---
 
-## 21. CUANDO EXISTAN VARIAS SOLUCIONES
+## 10. REGISTRO DE DECISIONES
 
-No elijas silenciosamente una solución que tenga consecuencias importantes.
-Presenta las alternativas relevantes, indica cuál recomiendas y por qué.
+Toda decisión relevante tomada en conversación **se escribe en `DECISIONS.md`
+antes de construir nada que dependa de ella**.
 
-Si la elección cambia costes, arquitectura, seguridad o comportamiento, **espera
-una decisión explícita antes de ejecutar.**
+Relevante significa que impacta en: producto, arquitectura, datos, seguridad,
+costes, proveedores, integraciones, comportamiento o alcance. **No** hace falta
+registrar cada microdecisión técnica reversible.
 
----
+Una decisión **nunca se sobrescribe en silencio**. Todo cambio de estado añade
+una entrada a `HISTORIAL` con estado anterior, estado nuevo, origen, fecha con su
+fuente, motivo e impacto.
 
-## 22. DOCUMENTACIÓN OFICIAL
+**No inventes fechas.** Sin fuente demostrable: `FECHA: UNVERIFIED`.
 
-Cuando una decisión dependa del comportamiento de una librería, framework, API o
-servicio externo, verifica la documentación oficial antes de asumir cómo funciona.
-
-**No confíes únicamente en memoria.**
-
----
-
-## 23. INVESTIGACIÓN
-
-Cuando necesites información externa, separa siempre:
-
-`[HECHO VERIFICADO]` · `[INTERPRETACIÓN]` · `[RECOMENDACIÓN]`
-
-No presentes una recomendación como si fuera documentación oficial.
+El esquema completo y el vocabulario están en la cabecera de `DECISIONS.md`, y
+`npm run auditar-control` los comprueba.
 
 ---
 
-## 24. RESULTADO FINAL OBLIGATORIO
+## 11. FORMATO ÚNICO DE RESPUESTA
 
-Al terminar una tarea, responde con:
+**Antes** de una tarea compleja:
 
 ```
-HECHO              Cambios realmente realizados.
-VERIFICADO         Pruebas ejecutadas y resultados.
-NO VERIFICADO      Lo que todavía no se ha podido comprobar.
-DESCONOCIDO        Información que sigue faltando.
-FUERA DE ALCANCE   Problemas encontrados que deliberadamente no se modificaron.
+OBJETIVO       qué se quiere conseguir
+VERIFICADO     qué se sabe con evidencia
+DECIDIDO       qué está aprobado
+PROPUESTO      qué se recomienda pero no está aprobado
+DESCONOCIDO    qué falta
+BLOQUEADO      qué no puede hacerse por esas incógnitas
+DESBLOQUEADO   qué sí puede hacerse
+PLAN           qué se va a hacer
+```
+
+**Al terminar:**
+
+```
+HECHO              cambios realmente realizados
+VERIFICADO         comandos ejecutados y sus resultados
+NO VERIFICADO      lo que no pudo comprobarse
+DESCONOCIDO        lo que sigue sin definirse
+BLOQUEADO          lo pendiente y por qué
+FUERA DE ALCANCE   lo detectado y deliberadamente no modificado
 ARCHIVOS MODIFICADOS
-PRÓXIMO PASO       Solo si existe una acción necesaria.
 ```
 
----
+Cuando exista una decisión de impacto, expón `DECISIÓN NECESARIA` · `OPCIONES` ·
+`RECOMENDACIÓN` · `ESTADO`, y espera aprobación. No elijas en silencio.
 
-## 25. REGLA DE ORO
+> *Origen: se recomendó Google Workspace sin haber mirado Hostinger, que
+> autoconfigura SPF y DKIM y donde ya estaba el DNS. Hubo que rectificar.*
 
-Cuando tengas que elegir entre:
-
-- **A)** asumir y avanzar
-- **B)** verificar
-- **C)** detenerte y señalar que falta información
-
-elige **B** o **C**. Nunca **A**.
-
-La velocidad NO es más importante que la exactitud. Una implementación incorrecta
-construida rápidamente es peor que detenerse.
+Al rectificar, **di qué dato cambió**. Una rectificación con causa es
+información; sin causa, es deambular.
 
 ---
 
-## 26. FRASE DE CONTROL
+## Regla de oro
 
-Antes de cualquier cambio relevante, pregúntate:
+Ante la elección entre **(A)** asumir y avanzar, **(B)** verificar, y **(C)**
+detenerse y señalar qué falta: elige **B** o **C**. Nunca **A**.
 
-> *"¿Tengo evidencia de que esto debe ser así, o simplemente estoy rellenando un hueco?"*
-
-Si la respuesta es "estoy rellenando un hueco": **NO CONSTRUIR.**
-
----
-
-## MODO DE CONSTRUCCIÓN ESTRICTO
-
-Está prohibido comenzar a implementar una funcionalidad cuando existan requisitos
-críticos sin determinar.
-
-Antes de construir una funcionalidad compleja, identifica: qué está definido, qué
-está verificado, qué está decidido, qué falta y qué estás proponiendo.
-
-Si existe un dato crítico `[DESCONOCIDO]` que pueda cambiar la implementación,
-**DETÉN la implementación** y solicita esa decisión.
-
-- No utilizar "defaults razonables" para cubrir requisitos desconocidos.
-- No utilizar "lo habitual" como justificación.
-- No utilizar "seguramente", "probablemente" o "entiendo que" como sustituto de
-  una decisión.
-
-Ninguna inferencia puede convertirse automáticamente en una decisión de producto.
-Si consideras que una decisión debería tomarse de una determinada manera,
-preséntala como `[PROPUESTO]` y espera autorización cuando tenga impacto relevante.
+La velocidad no es más importante que la exactitud. Pero detenerse cuando existe
+trabajo desbloqueado tampoco es correcto (§4).
 
 ---
 
-# ANEXO A — FALLOS REALES COMETIDOS EN ESTE PROYECTO
+# ANEXO A — Trampas de medición de este entorno
 
-Las reglas de arriba no son abstractas. Estos son los fallos que las originaron,
-todos ocurridos aquí. Se conservan porque una regla con su fallo detrás pesa más
-que una regla sin él.
+`[VERIFICADO]` — las cinco han producido falsos positivos aquí.
 
-**Afirmar sin comprobar** — `ant auth login` acabó dentro del producto, en el
-mensaje que ve todo cliente sin clave. El paquete `ant` de npm es un adaptador de
-Apache Ant de 2012 y no instala ningún binario. También se inventaron dos
-repositorios de "awesome lists" que devolvían 404. → Reglas 2 y 22.
-
-**Declarar hecho lo no subido** — se cambió `npx` por `npm install -g` en
-`action.yml`, se comiteó y se declaró resuelto. Nunca se subió. CI siguió
-corriendo el fichero antiguo y volvió a fallar. → Regla 14.
-
-**Fiarse de mediciones rotas** — tres falsos positivos en una sola auditoría:
-`cmd | head` devolvió el código de salida de `head` y no del comando; un `grep`
-de `onerror=` acusó de XSS a texto ya escapado e inerte; una regex laxa contó
-seis enlaces donde había cuatro. Los tres se cazaron volviendo a medir. → Regla 15.
-
-Trampas de medición conocidas en este entorno:
-
-- La tubería se come el código de salida. Medir con `cmd > /dev/null 2>&1; echo $?`
-  o con `PIPESTATUS[0]`.
-- `grep` encuentra el texto ya escapado. Comprobar el mecanismo, no la subcadena.
-- Una regex laxa cuenta de más. Acotar el ámbito antes de contar.
-- El resolutor local sirve DNS de caché. Consultar contra `8.8.8.8`.
-- El heredoc de Git Bash se come un nivel de escape. Construir `\` con `chr(92)`.
-
-**Recomendar sin mirar alternativas** — se recomendó Google Workspace argumentando
-que su asistente de DKIM evita errores, sin haber mirado Hostinger, que
-autoconfigura SPF y DKIM y donde además ya estaba el DNS. → Regla 21.
-
-**Contradecir un aviso propio** — se advirtió del riesgo de publicar en Hacker
-News con una cuenta nueva y horas después se dijo *"Sáltate el paso. En serio"*.
-Costó la ventana de lanzamiento. → Reglas 1 y 5.
-
-Al rectificar: **decir qué dato cambió**, no solo que se cambia de opinión. Una
-rectificación con causa es información; sin causa, es deambular.
+| Trampa | Qué hacer |
+|---|---|
+| La tubería se come el código de salida: `cmd \| head` devuelve el de `head` | `cmd > /dev/null 2>&1; echo $?` o `PIPESTATUS[0]` |
+| `grep` encuentra el texto **ya escapado** e inerte | comprobar el mecanismo, no la subcadena |
+| Una regex laxa cuenta de más | acotar el ámbito antes de contar |
+| El resolutor local sirve DNS de caché | consultar contra `8.8.8.8` |
+| El heredoc de Git Bash se come un nivel de escape | construir `\` con `chr(92)` |
 
 ---
 
-# ANEXO B — LO QUE ESTÁ FUERA DE MI ALCANCE
+# ANEXO B — Contexto técnico
 
-Categorías donde fingir criterio ha hecho más daño que no responder:
-
-- Reglas y moderación de plataformas ajenas en el momento presente.
-- Si un filtro antispam concreto dejará pasar un correo concreto.
-- Qué hará un cliente real.
-- Cualquier cosa posterior al corte de conocimiento que no se haya consultado.
-
-En estos casos: decirlo, y si existe forma de convertirlo en medida, proponerla.
-Una prueba vale más que una opinión.
-
----
-
-# ANEXO C — CONTEXTO TÉCNICO VERIFICADO
-
-`[VERIFICADO]` a 27 de agosto de 2026:
+`[VERIFICADO]` a 2026-08-27:
 
 - Node 24, TypeScript estricto, `verbatimModuleSyntax`, NodeNext. Vitest 3, Zod 4.
-- Monorepo: `packages/core`, `packages/cli`, `packages/server`.
-- Puertas: `npm run typecheck`, `npm test`, `npm run build`. **En CI el build va
-  antes que los tests**, porque hay tests que ejercitan el binario compilado.
-- 243 tests en verde.
+- Monorepo: `packages/core`, `packages/cli`, `packages/server`. 243 tests en verde.
+- Puertas: `npm run typecheck`, `npm test`, `npm run build`, `npm run auditar-control`.
+  **En CI el build va antes que los tests**, porque hay tests que ejercitan el
+  binario compilado.
 - La web vive en `docs/` y la publica GitHub Pages en refrendo.dev.
 
-**Los cuatro registros A `185.199.108–111.153` y el CNAME de `www` sostienen el
-dominio. NO SE TOCAN NUNCA.** Añadir correo usa registros MX y TXT, que conviven
-con ellos sin conflicto.
+> **Los cuatro registros A `185.199.108–111.153` y el CNAME de `www` sostienen el
+> dominio. NO SE TOCAN NUNCA.** El correo usa registros MX y TXT, que conviven
+> con ellos sin conflicto.
 
-Convención de código: los comentarios van en español y sin acentos, siguiendo lo
-que ya hay. Explican **por qué**, no qué hace la línea.
-
----
-
-# ANEXO D — SEGURIDAD, SIN EXCEPCIONES
-
-- No pedir nunca la clave de API por el chat. El usuario edita `.env`; a lo sumo
-  se verifica longitud, prefijo y ausencia de espacios — **nunca el valor**.
-- No generar contraseñas en el chat.
-- No crear cuentas ni introducir contraseñas.
-- `gh secret set` y `npm publish` los ejecuta el usuario.
-- No repetir su teléfono ni su nombre legal completo sin necesidad.
+Convención: comentarios en español y sin acentos, siguiendo lo que ya hay.
+Explican **por qué**, no qué hace la línea.

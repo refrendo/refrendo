@@ -50,6 +50,14 @@ jobs:
 
       # Compilar es una puerta mas: el codigo puede pasar el typecheck y aun
       # asi no emitir, y lo que se publica en npm es lo emitido.
+      # Control ESTRUCTURAL del sistema de decisiones. No detecta suposiciones
+      # semanticas: comprueba que el registro este bien formado, que ninguna
+      # fecha se presente como hecho sin fuente, y que los CHECK pertenezcan a
+      # la lista cerrada del auditor. Sin red, para que una caida ajena no
+      # rompa el build por algo que no es del codigo.
+      - name: Auditar el sistema de control
+        run: npm run auditar-control
+
       - name: Comprobar el empaquetado
         run: |
           set -euo pipefail

@@ -15,7 +15,8 @@
     "build": "npm run build -w @refrendo/core && npm run build -w @refrendo/server && npm run build -w refrendo",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "auditar-control": "node scripts/auditar-control.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
