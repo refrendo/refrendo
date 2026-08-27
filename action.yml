@@ -62,7 +62,7 @@ inputs:
       Refrendo version to use. Pinned by default so runs are reproducible; set
       "latest" to always follow the newest release.
     required: false
-    default: "0.1.0"
+    default: "0.1.1"
   auto-approve:
     description: >-
       Pre-approve commands outside the allowlist. Leave it false unless you know

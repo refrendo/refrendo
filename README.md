@@ -13,7 +13,7 @@ refrendo serve --demo          # see what it does, no API key needed
 ```
 
 ```yaml
-- uses: refrendo/refrendo@v0.1.0
+- uses: refrendo/refrendo@v0.1.1
   with:
     goal: ${{ github.event.issue.title }}
     anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
