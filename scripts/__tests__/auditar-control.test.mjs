@@ -185,3 +185,51 @@ describe("el auditor detecta lo incorrecto", () => {
     expect(codigo).toBe(1);
   });
 });
+
+/**
+ * El vocabulario de FECHA_FUENTE no sabia representar la procedencia real de una
+ * decision tomada por el usuario en conversacion: obligaba a elegir entre
+ * UNVERIFIED —que el auditor rechaza junto a una fecha concreta— y disfrazarla de
+ * "comando" porque una cabecera Date demostrase el dia. Una cabecera prueba que
+ * era ese dia, no que decidiera el usuario.
+ */
+describe("FECHA_FUENTE: conversación", () => {
+  /** VALIDA con fechas concretas y la fuente que se quiera probar. */
+  const conFuente = (fuente) => VALIDA
+    .replace("FECHA_DECISION: UNVERIFIED", "FECHA_DECISION: 2026-08-27")
+    .replace("FECHA_REGISTRO: UNVERIFIED", "FECHA_REGISTRO: 2026-08-27")
+    .replace("FECHA_FUENTE: UNVERIFIED", `FECHA_FUENTE: ${fuente}`);
+
+  it("es una fuente aceptada junto a fechas concretas → PASA", () => {
+    montar(conFuente("conversación"));
+    const { codigo, salida } = auditar();
+    expect(salida).not.toMatch(/no es válida/);
+    expect(codigo).toBe(0);
+  });
+
+  // Ampliar el vocabulario no puede convertirlo en una lista abierta.
+  it("una fuente inventada sigue rechazándose → FALLA", () => {
+    montar(conFuente("instrucción del usuario"));
+    const { codigo, salida } = auditar();
+    expect(salida).toMatch(/FECHA_FUENTE .* no es válida/);
+    expect(codigo).toBe(1);
+  });
+
+  // Las cuatro fuentes anteriores no cambian de comportamiento. Las puertas de
+  // `commit` y `UNVERIFIED` ya tienen sus propios tests mas arriba; aqui quedan
+  // las dos que se aceptan sin comprobacion adicional.
+  it.each(["documentación", "comando"])("la fuente %s sigue aceptándose → PASA", (fuente) => {
+    montar(conFuente(fuente));
+    const { codigo, salida } = auditar();
+    expect(salida).not.toMatch(/no es válida/);
+    expect(codigo).toBe(0);
+  });
+
+  // La conversacion registra la procedencia; no la vuelve reproducible desde un
+  // clon del repositorio.
+  it("con ORIGEN_VERIFICABLE: SI el auditor avisa de que no puede comprobarla", () => {
+    montar(conFuente("conversación").replace("ORIGEN_VERIFICABLE: NO", "ORIGEN_VERIFICABLE: SI"));
+    const { salida } = auditar();
+    expect(salida).toMatch(/no es comprobable por el auditor/);
+  });
+});

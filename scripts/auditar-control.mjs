@@ -25,7 +25,7 @@ const CON_RED = process.argv.includes("--con-red");
 
 const ESTADOS = ["DECIDIDO", "PROPUESTO", "DESCONOCIDO", "DESCARTADO", "REEMPLAZADO"];
 const ORIGENES = ["USUARIO", "CLAUDE", "REPOSITORIO", "VERIFICACIÓN"];
-const FUENTES = ["commit", "documentación", "comando", "UNVERIFIED"];
+const FUENTES = ["commit", "documentación", "comando", "conversación", "UNVERIFIED"];
 const OBLIGATORIOS = [
   "ESTADO", "FECHA_DECISION", "FECHA_REGISTRO", "FECHA_FUENTE", "FECHA_REF",
   "ORIGEN", "ORIGEN_REF", "ORIGEN_VERIFICABLE",

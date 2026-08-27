@@ -24,7 +24,14 @@ accesible desde CI. Sin evidencia: `UNVERIFIED`.
 `FECHA_REGISTRO` — cuándo la decisión quedó registrada en el repositorio. Esto sí
 es demostrable, y es lo único que prueba un commit.
 
-`FECHA_FUENTE` — `commit` · `documentación` · `comando` · `UNVERIFIED`
+`FECHA_FUENTE` — `commit` · `documentación` · `comando` · `conversación` ·
+`UNVERIFIED`
+
+`conversación` — la fecha o la decisión proceden de una instrucción explícita del
+usuario en la conversación. **No es evidencia reproducible**: un clon aislado del
+repositorio no puede volver a ver ese mensaje. El repositorio registra la
+procedencia; no la convierte en comprobable. Cuando la conversación sea la
+evidencia del origen de la decisión, `ORIGEN_VERIFICABLE` debe ser `NO`.
 
 `FECHA_REF` — el sha cuando la fuente es `commit`; `n/a` en otro caso.
 
@@ -225,22 +232,44 @@ CORRECCIÓN: una versión anterior de este fichero fechaba esta decisión el
 ---
 
 ## DEC-011 — Canal de captación
-ESTADO: PROPUESTO
-FECHA_DECISION: UNVERIFIED
-FECHA_REGISTRO: UNVERIFIED
-FECHA_FUENTE: UNVERIFIED
+ESTADO: DECIDIDO
+FECHA_DECISION: 2026-08-27
+FECHA_REGISTRO: 2026-08-27
+FECHA_FUENTE: conversación
 FECHA_REF: n/a
-ORIGEN: CLAUDE
-ORIGEN_REF: análisis presentado al usuario; no aprobado explícitamente
+ORIGEN: USUARIO
+ORIGEN_REF: aprobación explícita del usuario en la conversación actual
 ORIGEN_VERIFICABLE: NO
 MOTIVO: [VERIFICADO] Hacker News, Reddit, Product Hunt y LinkedIn tienen portero
 (karma, antigüedad o red) y hoy bloquean. El correo directo no tiene portero.
+ALCANCE: correo directo 1:1, manual, individual y de muy bajo volumen, como canal
+inicial de captación y validación. Permite contactar profesionalmente a personas
+concretas, con mensajes altamente personalizados, usando únicamente direcciones
+profesionales públicas y verificadas; permite discovery, validación y preparar
+los mensajes con Claude.
+NO_AUTORIZA: campañas masivas, bulk email, scraping + envío, secuencias
+automáticas, plataformas de cold email, warm-up artificial, SMTP programático,
+automatización de outreach, compra de bases de datos, correos inferidos o
+inventados y envíos automáticos a prospectos.
+GATE_DE_ENVIO: cada PRIMER contacto externo exige aprobación manual explícita del
+usuario en el prompt de `email_call_api_write`. No se crean reglas persistentes
+de allow y no se usa "Yes, and don't ask again".
 IMPACTO: producto, alcance
 CHECK: n/a
-BLOQUEA: enviar correos reales a empresas
+BLOQUEA: campañas, automatización de outreach y cualquier envío que no pase por
+la aprobación manual de `GATE_DE_ENVIO`.
 NO_BLOQUEA: preparar plantillas, construir la lista de empresas, montar el buzón
-NOTA: **no se ha enviado ningún correo.** Es una recomendación de Claude, no una
-decisión aprobada.
+HISTORIAL:
+  - 2026-08-27 · PROPUESTO → DECIDIDO · origen: usuario · fuente-fecha:
+    conversación · motivo: aprobación explícita tras comprobarse que Hacker News,
+    Reddit, Product Hunt y LinkedIn tienen portero · impacto: fija el canal de
+    captación y su alcance, y acota por escrito lo que NO autoriza; no habilita
+    por sí misma ningún envío.
+NOTA: aprobar esta decisión **no autoriza ningún envío concreto.** Sigue vigente
+la instrucción de no contactar prospectos hasta autorización específica. A
+2026-08-27 no se ha enviado ningún correo a prospectos.
+NOTA_ANTERIOR: mientras estuvo PROPUESTO este campo decía: "**no se ha enviado
+ningún correo.** Es una recomendación de Claude, no una decisión aprobada".
 
 ---
 
