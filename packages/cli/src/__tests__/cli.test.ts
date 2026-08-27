@@ -1,8 +1,9 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 /**
  * Estos tests ejercitan el binario tal y como lo recibe un cliente: un proceso
@@ -114,5 +115,90 @@ describe("errores previstos", () => {
     const veces = todo.split("No hay credenciales de la API de Anthropic").length - 1;
     expect(veces).toBe(1);
     expect(todo).not.toContain("Error fatal:");
+  });
+});
+
+/**
+ * `--report` se aceptaba en cualquier comando y solo se honraba en `ci`. En
+ * `run`, `plan` y `verify` se parseaba y se descartaba en silencio: exit 0, sin
+ * fichero y sin aviso. Se descubrio al pedir un informe de un run real.
+ *
+ * `verify` no puede producirlo: el informe describe un RunResult y `verify` solo
+ * devuelve un VerificationReport. Fabricar los campos que faltan seria inventar
+ * un run que no existio, asi que se rechaza en voz alta.
+ */
+describe("--report", () => {
+  let proyecto: string;
+
+  beforeEach(async () => {
+    const fs = await import("node:fs/promises");
+    proyecto = await fs.mkdtemp(path.join(os.tmpdir(), "refrendo-report-"));
+    await fs.writeFile(
+      path.join(proyecto, "package.json"),
+      JSON.stringify({ name: "p", private: true, scripts: { test: 'node -e "process.exit(0)"' } }),
+    );
+  });
+
+  afterEach(async () => {
+    const fs = await import("node:fs/promises");
+    await fs.rm(proyecto, { recursive: true, force: true });
+  });
+
+  it("verify --report falla explicitamente y no crea el fichero", async () => {
+    const fs = await import("node:fs/promises");
+    const destino = path.join(proyecto, "informe.md");
+
+    const { codigo, stdout, stderr } = refrendo(["verify", "--report", destino], proyecto);
+    const todo = `${stdout}${stderr}`;
+
+    expect(codigo).not.toBe(0);
+    expect(todo).toContain("--report no esta soportado por");
+    expect(todo).toContain("refrendo run --report");
+    await expect(fs.access(destino)).rejects.toThrow();
+  });
+
+  it("verify --report no llega a ejecutar las puertas", () => {
+    // Falla antes de nada: ni ejecuta tests ni toca la API.
+    const { stdout } = refrendo(["verify", "--report", path.join(proyecto, "x.md")], proyecto);
+    expect(stdout).not.toContain("puertas:");
+  });
+
+  it("verify sin --report sigue funcionando igual", () => {
+    const { codigo, stdout } = refrendo(["verify"], proyecto);
+    expect(codigo).toBe(0);
+    expect(stdout).toContain("puertas:");
+  });
+
+  it("la ayuda dice que comandos soportan --report", () => {
+    const { stdout } = refrendo(["--help"]);
+    expect(stdout).toMatch(/--report .*\(run, ci y plan\)/);
+  });
+
+  // `run` y `plan` no pueden llegar a escribir el informe sin una llamada real
+  // al modelo, asi que eso queda sin cubrir. Lo que si se puede demostrar sin
+  // gasto es que la bandera NO los rechaza: mueren por falta de credencial, que
+  // es un paso posterior. Si alguien extendiera el rechazo de `verify` a estos
+  // comandos por error, este test lo caza.
+  // `writeReport` no captura sus errores a proposito: si no se puede escribir el
+  // informe que alguien pidio, tiene que enterarse. Esa garantia depende de que
+  // una excepcion dentro de main() acabe en exit != 0, no en un exit 0 callado.
+  //
+  // Provocar el fallo desde el propio writeReport exigiria un run real, asi que
+  // aqui se prueba el MECANISMO con una ruta que ya lanza: no cubre la escritura
+  // del informe en concreto, cubre que ninguna excepcion se pierda.
+  it("una excepcion dentro de main no termina en exit 0", () => {
+    const { codigo, stderr } = refrendo(["serve", "--port", "abc"]);
+    expect(codigo).not.toBe(0);
+    expect(stderr).toContain("Error fatal:");
+  });
+
+  it.each(["run", "plan"])("%s acepta --report y no lo rechaza como verify", (comando) => {
+    const { stdout, stderr } = refrendo(
+      [comando, "un objetivo", "--report", path.join(proyecto, "informe.md")],
+      proyecto,
+    );
+    const todo = `${stdout}${stderr}`;
+    expect(todo).not.toContain("--report no esta soportado");
+    expect(todo).toContain("ANTHROPIC_API_KEY");
   });
 });

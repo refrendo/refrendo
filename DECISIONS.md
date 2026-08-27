@@ -342,6 +342,34 @@ depender de ella. La v0.1.0 será una etiqueta nueva.
 
 ---
 
+## DEC-016 — `--report` es funcional; `verify` lo rechaza en vez de fingirlo
+ESTADO: DECIDIDO
+FECHA_DECISION: UNVERIFIED
+FECHA_REGISTRO: UNVERIFIED
+FECHA_FUENTE: UNVERIFIED
+FECHA_REF: n/a
+ORIGEN: USUARIO
+ORIGEN_REF: decisión explícita en conversación, opción A y luego V1, tras presentarle la evidencia
+ORIGEN_VERIFICABLE: NO
+MOTIVO: aceptar una opción en silencio y luego ignorarla es un bug. Si el usuario
+pide un informe y no puede dársele, tiene que enterarse.
+IMPACTO: producto, comportamiento
+CHECK: n/a
+BLOQUEA: publicar 0.1.1
+NO_BLOQUEA: implementar la corrección, escribir los tests, verificar en local
+NOTA: comportamiento decidido — `run` y `plan` escriben el informe; `ci` queda
+exactamente igual; `verify` **falla con diagnóstico explícito y exit distinto de 0**.
+NOTA_EVIDENCIA: [VERIFICADO] `run`, `ci` y `plan` comparten rama en
+packages/cli/src/index.ts y los tres producen un RunResult completo. `verify`
+devuelve un VerificationReport con solo tres campos —passed, gates, ranAt—
+mientras que renderMarkdownReport necesita nueve. Fabricar los ocho que faltan
+seria inventar semántica, y `verified` significa "los cambios del agente pasaron
+las puertas" cuando en `verify` no hubo cambios.
+NOTA_ALCANCE: no se diseña ningún formato de informe para VerificationReport.
+Eso seria funcionalidad nueva y queda fuera.
+
+---
+
 ## Cómo añadir o cambiar una decisión
 
 **Nueva:** número correlativo y todos los campos obligatorios — `ESTADO`,

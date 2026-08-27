@@ -15,6 +15,7 @@ import {
   defaultPolicyConfig,
   detectGates,
   loadConfig,
+  renderMarkdownReport,
   verify,
   type ApprovalRequest,
   type Effort,
@@ -48,7 +49,7 @@ Opciones
       --demo                Siembra un run de ejemplo si el historial esta vacio
       --branch-prefix <p>   Prefijo de rama en 'ci' (por defecto: refrendo)
       --no-commit           En 'ci', no crear rama ni commit
-      --report <fichero>    Escribe el informe en Markdown
+      --report <fichero>    Escribe el informe en Markdown (run, ci y plan)
       --no-record           No guardar el run en el historial local
       --run-url <url>       Enlace a la pagina del run, para el informe
   -y, --yes                 Aprueba automaticamente los comandos no destructivos
@@ -183,6 +184,20 @@ async function main(argv: string[]): Promise<number> {
     }
 
     case "verify": {
+      // `--report` no se puede honrar aqui: el informe se construye a partir de
+      // un RunResult y `verify` solo produce un VerificationReport. Fabricar los
+      // campos que faltan —objetivo, resumen, cambios, coste— seria inventar un
+      // run que no ha existido. Se rechaza en voz alta en vez de callar: quien
+      // pide un informe tiene que enterarse de que no va a recibirlo.
+      if (values["report"]) {
+        process.stderr.write(
+          `${c.red("--report no esta soportado por `refrendo verify`.")}\n` +
+            "El informe describe un run completo (objetivo, plan, cambios, coste) y\n" +
+            "`verify` solo ejecuta las puertas: no hay run que describir.\n" +
+            "Usa `refrendo run --report <fichero>` o `refrendo ci --report <fichero>`.\n",
+        );
+        return 2;
+      }
       const gates = config.gates ?? (await detectGates(workspace));
       if (gates.length === 0) {
         process.stdout.write(`${c.yellow(noGatesHelp(CONFIG_FILENAME))}\n`);
@@ -316,6 +331,22 @@ async function main(argv: string[]): Promise<number> {
         process.stdout.write(`\n${outcome.code === 0 ? c.green("CI") : c.yellow("CI")} ${outcome.reason}\n`);
         if (values["report"]) await writeReport(values["report"], outcome.report);
         return outcome.code;
+      }
+
+      // `run` y `plan` producen el mismo RunResult que `ci`, asi que el informe
+      // sale del mismo renderer. Antes solo se escribia en la rama de `ci` y la
+      // bandera se aceptaba en silencio en las otras dos.
+      //
+      // `includePlan` va a true porque aqui no hay cuerpo de pull request donde
+      // el plan sobre: quien pide el informe de un `run` o un `plan` lo quiere.
+      if (values["report"]) {
+        await writeReport(
+          values["report"],
+          renderMarkdownReport(result, {
+            ...(values["run-url"] ? { runUrl: values["run-url"] } : {}),
+            includePlan: true,
+          }),
+        );
       }
 
       // El codigo de salida es la senal para CI: solo "verified" es un exito.
