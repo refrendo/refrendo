@@ -25,6 +25,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # El auditor de control resuelve FECHA_REF con `git show`. Con el
+          # clonado superficial por defecto (depth=1) esos commits historicos no
+          # existen en el runner y la comprobacion falla por falta de historia,
+          # no porque las fechas sean incorrectas.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
