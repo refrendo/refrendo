@@ -1,0 +1,197 @@
+name: Verificar release
+
+# Manual y solo manual. No corre en push, ni en pull_request, ni programado:
+# comprueba una version ya publicada y congelada, asi que ejecutarlo en cada
+# cambio no aportaria nada y consumiria minutos.
+on:
+  workflow_dispatch:
+
+# Solo lectura. Este workflow no publica, no comitea y no abre pull requests.
+permissions:
+  contents: read
+
+jobs:
+  # ------------------------------------------------------------------ #
+  # B y parte de C, aislados de la GitHub Action.
+  #
+  # Sin checkout a proposito: si no hay codigo del repositorio en el runner,
+  # no cabe la duda de si lo que se esta probando es el paquete publico o el
+  # arbol local.
+  # ------------------------------------------------------------------ #
+  paquete-publicado:
+    name: El paquete publico se instala y arranca
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Instalar refrendo@0.1.0 desde el registro publico
+        run: npm install -g --registry=https://registry.npmjs.org/ refrendo@0.1.0
+
+      - name: El binario esta en el PATH
+        run: command -v refrendo
+
+      - name: La version es exactamente 0.1.0
+        run: |
+          set -euo pipefail
+          v="$(refrendo --version)"
+          echo "refrendo --version -> $v"
+          test "$v" = "0.1.0"
+
+      - name: Pedir ayuda no es un error
+        run: |
+          set -euo pipefail
+          refrendo --help > /dev/null
+          echo "refrendo --help -> exit 0"
+
+      - name: Las tres dependencias internas resuelven a 0.1.0
+        run: |
+          set -euo pipefail
+          npm ls -g --depth=3 --json > /tmp/instalado.json
+          node -e '
+            const j = require("/tmp/instalado.json");
+            const recoger = (deps, acc = {}) => {
+              for (const [n, v] of Object.entries(deps ?? {})) {
+                acc[n] = v.version;
+                recoger(v.dependencies, acc);
+              }
+              return acc;
+            };
+            const todo = recoger(j.dependencies);
+            let mal = 0;
+            for (const p of ["refrendo", "@refrendo/core", "@refrendo/server"]) {
+              const v = todo[p] ?? "AUSENTE";
+              console.log(p + " = " + v);
+              if (v !== "0.1.0") mal++;
+            }
+            if (mal > 0) { console.error("alguna dependencia interna no es 0.1.0"); process.exit(1); }
+          '
+
+      - name: El arreglo que motivo la release viaja en el paquete
+        run: |
+          set -euo pipefail
+          raiz="$(npm root -g)"
+          if grep -rq "ant auth login" "$raiz/refrendo" "$raiz/@refrendo" 2>/dev/null; then
+            echo "ERROR: 'ant auth login' sigue en el paquete publicado"
+            exit 1
+          fi
+          echo "'ant auth login' ausente del paquete publicado"
+
+      - name: Detecta un ecosistema fuera de npm
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/repo-go && cd /tmp/repo-go
+          echo "module ejemplo.com/svc" > go.mod
+          salida="$(refrendo verify 2>&1 || true)"
+          echo "$salida"
+          echo "$salida" | grep -q "test" || { echo "ERROR: no detecto la puerta de tests en un repo Go"; exit 1; }
+
+  # ------------------------------------------------------------------ #
+  # A, y confirmacion de B a traves de la Action.
+  #
+  # Consume el TAG REMOTO. Nunca `uses: ./` ni `@main`: eso probaria el codigo
+  # del checkout, que es justo lo que no queremos probar.
+  # ------------------------------------------------------------------ #
+  accion-desde-el-tag:
+    name: La Action del tag v0.1.0 se resuelve e instala
+    runs-on: ubuntu-latest
+    steps:
+      # Proyecto de mentira en /tmp. La Action NO trabaja sobre este
+      # repositorio: asi, ni en el peor escenario puede tocar nada nuestro.
+      - name: Preparar un proyecto ajeno en el runner
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/proyecto-prueba && cd /tmp/proyecto-prueba
+          git init -q .
+          echo '{"name":"prueba","scripts":{"test":"node -e \"process.exit(0)\""}}' > package.json
+          git add -A
+          git -c user.email=ci@refrendo.dev -c user.name=CI commit -qm inicial
+
+      # La credencial es DELIBERADAMENTE FALSA y no es un secreto. Con ella la
+      # API responde 401, que nuestro codigo traduce a un error de credenciales
+      # propio. Un 401 no genera consumo facturable.
+      #
+      # `continue-on-error` porque el fallo posterior es ESPERADO: lo que se
+      # comprueba no es que la Action termine bien, sino hasta donde llego.
+      - name: Ejecutar la Action desde el tag remoto
+        id: accion
+        continue-on-error: true
+        uses: refrendo/refrendo@v0.1.0
+        with:
+          goal: "comprobacion de arranque, sin credencial valida"
+          anthropic-api-key: refrendo-ci-test-invalid-key
+          working-directory: /tmp/proyecto-prueba
+          create-pr: "false"
+          max-cost: "0.01"
+
+      # Que este paso llegue a ejecutarse ya demuestra A: si el tag no
+      # existiera o su action.yml estuviera mal formado, el job habria muerto
+      # en "Download action repository" sin llegar hasta aqui.
+      - name: A — la Action se resolvio desde el tag
+        run: |
+          set -euo pipefail
+          echo "outcome del paso de la Action: ${{ steps.accion.outcome }}"
+          echo "GitHub resolvio y ejecuto refrendo/refrendo@v0.1.0"
+
+      # Evidencia INDEPENDIENTE del outcome. Si la Action hubiera fallado antes
+      # de instalar, aqui no habria binario y el job caeria: es exactamente lo
+      # que debe pasar, y no se maquilla.
+      - name: B — la Action instalo refrendo@0.1.0
+        run: |
+          set -euo pipefail
+          command -v refrendo
+          v="$(refrendo --version)"
+          echo "refrendo --version -> $v"
+          test "$v" = "0.1.0"
+
+      - name: B — las dependencias internas instaladas son 0.1.0
+        run: |
+          set -euo pipefail
+          npm ls -g --depth=3 --json > /tmp/instalado.json
+          node -e '
+            const j = require("/tmp/instalado.json");
+            const recoger = (deps, acc = {}) => {
+              for (const [n, v] of Object.entries(deps ?? {})) {
+                acc[n] = v.version;
+                recoger(v.dependencies, acc);
+              }
+              return acc;
+            };
+            const todo = recoger(j.dependencies);
+            let mal = 0;
+            for (const p of ["refrendo", "@refrendo/core", "@refrendo/server"]) {
+              const v = todo[p] ?? "AUSENTE";
+              console.log(p + " = " + v);
+              if (v !== "0.1.0") mal++;
+            }
+            if (mal > 0) process.exit(1);
+          '
+
+      - name: C — el CLI publico arranca en un runner limpio
+        run: |
+          set -euo pipefail
+          refrendo --help > /dev/null
+          echo "el CLI instalado por la Action arranca y responde"
+
+      - name: Resumen
+        run: |
+          {
+            echo "## Verificacion de la release 0.1.0"
+            echo
+            echo "| | Resultado |"
+            echo "|---|---|"
+            echo "| A — Action resuelta desde el tag v0.1.0 | PASA |"
+            echo "| B — instalo refrendo@0.1.0 y sus dependencias | PASA |"
+            echo "| C — el CLI publico arranca en el runner | PASA |"
+            echo "| D — agente real contra la API | **NO VERIFICADO** |"
+            echo
+            echo "El paso de la Action termino en \`${{ steps.accion.outcome }}\`."
+            echo "Con una credencial deliberadamente invalida eso es un"
+            echo "**fallo esperado de autenticacion**, no un fallo de A, B ni C:"
+            echo "las tres se comprueban con evidencia independiente del outcome."
+            echo
+            echo "**D sigue sin verificarse.** Ninguna peticion util al modelo se"
+            echo "ha ejecutado, asi que este workflow no dice nada sobre si el"
+            echo "agente planifica, edita, verifica o abre un pull request."
+          } >> "$GITHUB_STEP_SUMMARY"
