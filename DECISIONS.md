@@ -315,6 +315,33 @@ que una empresa real lo confirme.**
 
 ---
 
+## DEC-015 — La siguiente versión pública será 0.1.0
+ESTADO: DECIDIDO
+FECHA_DECISION: UNVERIFIED
+FECHA_REGISTRO: UNVERIFIED
+FECHA_FUENTE: UNVERIFIED
+FECHA_REF: n/a
+ORIGEN: USUARIO
+ORIGEN_REF: aprobación explícita en conversación, tras presentarle 0.1.0 frente a 0.0.2
+ORIGEN_VERIFICABLE: NO
+MOTIVO: en 0.x no hay contrato de estabilidad, pero el segundo dígito comunica
+que la superficie cambió: se detectan ecosistemas nuevos y hay una bandera nueva.
+0.0.2 subestimaría 419 líneas de producto.
+IMPACTO: producto, integraciones
+CHECK: n/a
+BLOQUEA: publicar en npm, crear la etiqueta v0.1.0, apuntar la Action a 0.1.0
+NO_BLOQUEA: subir las versiones en los manifiestos, verificar el empaquetado,
+cualquier trabajo sobre el código
+NOTA: [VERIFICADO] a 2026-08-27 npm sirve 0.0.1 publicada el 2026-08-22, mientras
+el repositorio lleva 419 líneas de arreglos sin publicar — entre ellos la
+instrucción inexistente `ant auth login` que ve todo cliente sin clave.
+NOTA_ORDEN: la publicación va en orden topológico core → server → cli, porque
+server depende de core y cli de ambos.
+NOTA_TAG: la etiqueta v0.0.1 **no se mueve**. Ya está publicada y algo podría
+depender de ella. La v0.1.0 será una etiqueta nueva.
+
+---
+
 ## Cómo añadir o cambiar una decisión
 
 **Nueva:** número correlativo y todos los campos obligatorios — `ESTADO`,

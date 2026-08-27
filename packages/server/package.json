@@ -1,6 +1,6 @@
 {
   "name": "@refrendo/server",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
@@ -12,7 +12,7 @@
     }
   },
   "dependencies": {
-    "@refrendo/core": "^0.0.1"
+    "@refrendo/core": "^0.1.0"
   },
   "license": "Apache-2.0",
   "repository": {
