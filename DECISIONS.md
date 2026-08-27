@@ -370,6 +370,38 @@ Eso seria funcionalidad nueva y queda fuera.
 
 ---
 
+## DEC-017 — La corrección de `--report` se publica solo como CLI 0.1.1
+ESTADO: DECIDIDO
+FECHA_DECISION: UNVERIFIED
+FECHA_REGISTRO: UNVERIFIED
+FECHA_FUENTE: UNVERIFIED
+FECHA_REF: n/a
+ORIGEN: USUARIO
+ORIGEN_REF: decisión explícita en conversación, opción B, tras presentarle A y B con evidencia
+ORIGEN_VERIFICABLE: NO
+MOTIVO: la corrección de `--report` se publicará como `refrendo` CLI 0.1.1;
+`@refrendo/core` y `@refrendo/server` permanecen en 0.1.0 porque no contienen
+cambios ni metadatos que requieran republicación.
+IMPACTO: producto, integraciones
+CHECK: n/a
+BLOQUEA: publicar refrendo 0.1.1, apuntar action.yml a 0.1.1, crear la etiqueta v0.1.1
+NO_BLOQUEA: subir la version en el manifiesto del CLI, verificar el empaquetado
+NOTA_ALCANCE: **esta decisión NO establece una política universal de versionado
+independiente para el monorepo.** Es una decisión sobre esta release concreta.
+Convertirla en regla general para releases futuras exige una decisión explícita
+del usuario. Ver DEC-015, que tampoco era una política.
+NOTA_EVIDENCIA: [VERIFICADO] el commit 710b78c toca solo packages/cli; core y
+server no cambian ni una línea. Nadie depende de `cli` —la dependencia va en
+sentido contrario—, y los rangos `^0.1.0` siguen resolviendo a 0.1.0, que es lo
+publicado, así que no hay metadato que actualizar en ninguno de los dos.
+NOTA_PRECEDENTE: en 0.1.0 se republicó `@refrendo/server` pese a no tener cambios
+de código, pero por una razón distinta: su rango de dependencia pasó de `^0.0.1`
+a `^0.1.0` y sin republicar su manifiesto habría seguido apuntando a core 0.0.1.
+No fue lockstep. Aquí ese rango no cambia.
+NOTA_CORRIGE: DEC-016.
+
+---
+
 ## Cómo añadir o cambiar una decisión
 
 **Nueva:** número correlativo y todos los campos obligatorios — `ESTADO`,
