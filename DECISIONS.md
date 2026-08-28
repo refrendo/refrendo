@@ -244,20 +244,66 @@ MOTIVO: [VERIFICADO] Hacker News, Reddit, Product Hunt y LinkedIn tienen portero
 (karma, antigüedad o red) y hoy bloquean. El correo directo no tiene portero.
 ALCANCE: correo directo 1:1, manual, individual y de muy bajo volumen, como canal
 inicial de captación y validación. Permite contactar profesionalmente a personas
-concretas, con mensajes altamente personalizados, usando únicamente direcciones
-profesionales públicas y verificadas; permite discovery, validación y preparar
-los mensajes con Claude.
+concretas o a la organización, con mensajes altamente personalizados, usando
+únicamente un `CANAL_ADMISIBLE`; permite discovery, validación y preparar los
+mensajes con Claude.
+CANAL_ADMISIBLE: canal profesional público, verificable y expresamente ofrecido
+para recibir contactos de negocio o profesionales, cuya finalidad publicada sea
+compatible con el mensaje. Puede ser: (1) correo profesional individual publicado
+expresamente para contacto profesional; (2) buzón general de empresa publicado
+para consultas comerciales o de negocio; (3) formulario oficial de contacto cuyo
+propósito admita consultas comerciales o profesionales; (4) otra vía profesional
+que la propia persona señale expresamente como preferida. Superar este criterio
+**solo determina que la vía puede EVALUARSE: no autoriza el envío ni implica
+cumplimiento legal.** Que un buzón o un formulario sea público, o esté destinado a
+negocio, no lo vuelve lícito por sí mismo. Para enviar se exigen los tres, y los
+tres son necesarios: `CANAL_ADMISIBLE`, `GATE_DE_CUMPLIMIENTO` y `GATE_DE_ENVIO`.
+Condiciones cuando el canal pertenece a una organización: no se atribuye a una
+persona concreta, el mensaje se dirige a la organización y puede pedir que se
+encamine a la función o persona adecuada; la finalidad publicada del canal manda
+sobre la conveniencia del remitente.
 NO_AUTORIZA: campañas masivas, bulk email, scraping + envío, secuencias
 automáticas, plataformas de cold email, warm-up artificial, SMTP programático,
 automatización de outreach, compra de bases de datos, correos inferidos o
-inventados y envíos automáticos a prospectos.
+inventados y envíos automáticos a prospectos. Tampoco: desviar un canal de su
+finalidad publicada —`support@` para vender, `security@`, `abuse@`, `jobs@`, ni
+`press@` salvo consulta de prensa real—; correo obtenido de commits; información
+obtenida de GitHub para enviar correo no solicitado, de acuerdo con las
+Information Usage Restrictions de las GitHub Acceptable Use Policies; direcciones
+de agregadores o data brokers como RocketReach, ZoomInfo o ContactOut; ni
+direcciones personales privadas.
 GATE_DE_ENVIO: cada PRIMER contacto externo exige aprobación manual explícita del
 usuario en el prompt de `email_call_api_write`. No se crean reglas persistentes
 de allow y no se usa "Yes, and don't ask again".
+GATE_DE_CUMPLIMIENTO: antes de cualquier primer contacto comercial debe
+comprobarse el cumplimiento aplicable al remitente, destinatario, jurisdicción,
+contenido y canal. Si el cumplimiento no está suficientemente determinado:
+BLOQUEADO. No se inventa base jurídica, no se asume que B2B esté exento y el
+"interés legítimo" del RGPD no se convierte en autorización automática para
+enviar correo electrónico. La comprobación se hace caso por caso antes de cada
+envío; esta decisión no prejuzga ningún destinatario concreto.
+LSSI_ART_21: [VERIFICADO] contra el texto consolidado vigente del BOE
+(BOE-A-2002-13758, Ley 34/2002; texto consolidado con última actualización
+publicada el 23/01/2025; art. 21 con última modificación publicada el
+10/05/2014). El art. 21.1 dispone: "Queda prohibido el envío de comunicaciones
+publicitarias o promocionales por correo electrónico u otro medio de comunicación
+electrónica equivalente que previamente no hubieran sido solicitadas o
+expresamente autorizadas por los destinatarios de las mismas." El art. 21.2
+establece una excepción cuando existe relación contractual previa, los datos de
+contacto se obtuvieron lícitamente y la comunicación se refiere a productos o
+servicios propios similares a los contratados, con obligación de ofrecer un medio
+sencillo y gratuito de oposición —descripción del apartado verificada contra el
+consolidado, no cita literal—. No se deduce de aquí ninguna conclusión jurídica
+más amplia. Para un prospecto nuevo sin relación contractual previa NO se asume
+que el art. 21.2 aplique. El artículo 21 no establece en su texto una excepción
+B2B genérica. Un correo comercial frío puede seguir BLOQUEADO por
+`GATE_DE_CUMPLIMIENTO` aunque el canal supere `CANAL_ADMISIBLE`.
 IMPACTO: producto, alcance
 CHECK: n/a
-BLOQUEA: campañas, automatización de outreach y cualquier envío que no pase por
-la aprobación manual de `GATE_DE_ENVIO`.
+BLOQUEA: campañas, automatización de outreach, cualquier envío por un canal que
+no cumpla `CANAL_ADMISIBLE`, cualquier envío cuyo cumplimiento no quede
+determinado por `GATE_DE_CUMPLIMIENTO`, y cualquier envío que no pase por la
+aprobación manual de `GATE_DE_ENVIO`.
 NO_BLOQUEA: preparar plantillas, construir la lista de empresas, montar el buzón
 HISTORIAL:
   - 2026-08-27 · PROPUESTO → DECIDIDO · origen: usuario · fuente-fecha:
@@ -265,6 +311,17 @@ HISTORIAL:
     Reddit, Product Hunt y LinkedIn tienen portero · impacto: fija el canal de
     captación y su alcance, y acota por escrito lo que NO autoriza; no habilita
     por sí misma ningún envío.
+  - 2026-08-27 · DECIDIDO → DECIDIDO, sin cambio de estado; se precisa el canal y
+    se añade una condición de cumplimiento · origen: usuario · fuente-fecha:
+    conversación · motivo: [VERIFICADO] bajo el criterio "direcciones
+    profesionales públicas y verificadas", 0 de los 10 prospectos de la muestra
+    Tier A tenía correo profesional individual publicado por una fuente de primera
+    mano. El dato describe esa muestra y ese criterio; no se generaliza a otros
+    ingenieros ni a otros CTOs. Se sustituye el requisito por `CANAL_ADMISIBLE`,
+    que atiende a la finalidad publicada del canal en lugar de a si la dirección
+    es individual · impacto: amplía las vías que pueden evaluarse sin autorizar
+    cold email genérico, y añade `GATE_DE_CUMPLIMIENTO` como condición obligatoria
+    previa a cualquier primer contacto comercial.
 NOTA: aprobar esta decisión **no autoriza ningún envío concreto.** Sigue vigente
 la instrucción de no contactar prospectos hasta autorización específica. A
 2026-08-27 no se ha enviado ningún correo a prospectos.
